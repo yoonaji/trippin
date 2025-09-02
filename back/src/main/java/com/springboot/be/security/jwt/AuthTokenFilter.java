@@ -29,7 +29,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth") || path.startsWith("/oauth2") || path.startsWith("/login");
+        return path.equals("/api/auth/signin")
+                || path.equals("/api/auth/signup")
+                || path.equals("/api/auth/token/reissue")
+                || path.startsWith("/oauth2")
+                || path.startsWith("/login");
+        //return path.startsWith("/api/auth") || path.startsWith("/oauth2") || path.startsWith("/login");
     }
 
 
