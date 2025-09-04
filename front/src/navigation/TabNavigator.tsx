@@ -75,6 +75,7 @@ const TabNavigator = () => {
           tabBarLabel: renderLabel('Friend'),
         }}
       />
+      
 
       <Tab.Screen
         name="MyPageStack"

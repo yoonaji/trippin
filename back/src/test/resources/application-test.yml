@@ -1,0 +1,64 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: test
+    password: test
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      repositories:
+        enabled: false
+
+  mail:
+    host: localhost
+    port: 2525
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls.enable: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test
+            client-secret: test
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            scope: profile, email
+          naver:
+            client-id: test
+            client-secret: test
+            redirect-uri: "http://localhost:8080/login/oauth2/code/naver"
+            authorization-grant-type: authorization_code
+          kakao:
+            client-id: test
+            client-secret: test
+            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+
+jwt:
+  secret: test-jwt
+  expirationMs: 60000
+
+bezkoder:
+  app:
+    jwtSecret: test-jwt
+    jwtExpirationMs: 60000
+
+google:
+  api:
+    key: test-google-api-key
