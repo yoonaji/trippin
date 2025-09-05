@@ -62,3 +62,7 @@ bezkoder:
 google:
   api:
     key: test-google-api-key
+
+app:
+  s3:
+    enabled: false
