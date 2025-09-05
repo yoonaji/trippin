@@ -131,13 +131,8 @@ management:
 
 app:
   s3:
-    enable: false
-    region: ap-northeast-2
-    bucket: dummy-bucket
+    enabled: true
+    region: ${APP_S3_REGION}
+    bucket: ${APP_S3_BUCKET}
   cdn:
-    domain: dummy.example.com
-  sqs:
-    region: ${APP_SQS_REGION}
-    queue-url: ${APP_SQS_QUEUE_URL}
-    fifo: ${APP_SQS_FIFO}
-    group-id-default: ${APP_SQS_GROUP_ID}
+    domain: ${APP_CDN_DOMAIN}
