@@ -65,4 +65,6 @@ google:
 
 app:
   s3:
-    enabled: false
+    enabled: true
+    region: ap-northeast-2
+    bucket: dummy-bucket
