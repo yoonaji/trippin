@@ -12,9 +12,10 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 class BeApplicationTests {
 
     @MockitoBean
-    S3Client s3Client;
+    private S3Client s3Client;
+
     @MockitoBean
-    S3Presigner s3Presigner;
+    private S3Presigner s3Presigner;
 
     @Test
     void contextLoads() {
