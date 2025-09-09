@@ -7,7 +7,7 @@ public record MarkerSummaryDto(
         String placeName,
         double lat,
         double lng,
-        int postCount,
+        int photoCount,
         Integer orderIndex
 ) {
     public static MarkerSummaryDto from(Marker marker) {

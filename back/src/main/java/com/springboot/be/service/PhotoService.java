@@ -4,28 +4,37 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
+import com.springboot.be.dto.request.ImageUploadRequest;
 import com.springboot.be.dto.response.CommentDto;
 import com.springboot.be.dto.response.PhotoDetailDto;
 import com.springboot.be.dto.response.PhotoUploadResponse;
 import com.springboot.be.entity.Photo;
 import com.springboot.be.entity.PhotoLike;
 import com.springboot.be.entity.User;
-import com.springboot.be.exception.FileStorageException;
 import com.springboot.be.exception.NotFoundException;
 import com.springboot.be.repository.CommentRepository;
 import com.springboot.be.repository.PhotoLikeRepository;
 import com.springboot.be.repository.PhotoRepository;
 import com.springboot.be.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -36,6 +45,15 @@ public class PhotoService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final GeoCodingService geoCodingService;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
+
+    @Value("${app.s3.bucket}")
+    String bucket;
+    @Value("${app.s3.region}")
+    String region;
+    @Value("${app.cdn.domain}")
+    String cdn;
 
     @Transactional(readOnly = true)
     public PhotoDetailDto getPhotoDetail(Long photoId) {
@@ -75,14 +93,38 @@ public class PhotoService {
         }
     }
 
-    public List<PhotoUploadResponse> uploadImages(List<MultipartFile> images) {
+    public List<Map<String, Object>> presign(List<ImageUploadRequest.FileMeta> files) {
+        List<Map<String, Object>> out = new ArrayList<>();
+
+        for (ImageUploadRequest.FileMeta file : files) {
+            String key = buildSafeKey(file.getFilename());
+            PutObjectRequest por = PutObjectRequest.builder()
+                    .bucket(bucket).key(key).contentType(file.getContentType()).build();
+
+            PresignedPutObjectRequest pre = s3Presigner.presignPutObject(
+                    PutObjectPresignRequest.builder()
+                            .signatureDuration(Duration.ofMinutes(10))
+                            .putObjectRequest(por).build());
+
+            out.add(Map.of(
+                    "objectKey", key,
+                    "uploadUrl", pre.url().toString(),
+                    "headers", pre.signedHeaders(),
+                    "publicUrl", "https://" + cdn + "/" + key
+            ));
+        }
+        return out;
+    }
+
+    public List<PhotoUploadResponse> finalizeFromS3(List<String> objecKeys) {
         List<PhotoUploadResponse> responses = new ArrayList<>();
-
-        for (MultipartFile image : images) {
+        for (String key : objecKeys) {
             try {
-                String imageUrl = saveFile(image);
+                ResponseBytes<GetObjectResponse> obj = s3Client.getObjectAsBytes(
+                        GetObjectRequest.builder().bucket(bucket).key(key).build());
+                byte[] bytes = obj.asByteArray();
 
-                Metadata metadata = ImageMetadataReader.readMetadata(image.getInputStream());
+                Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
 
                 Double lat = null, lng = null;
                 LocalDateTime takenAt = null;
@@ -102,9 +144,9 @@ public class PhotoService {
                 }
 
                 String address = (lat != null && lng != null) ? geoCodingService.reverseGeocoding(lat, lng) : "위치 정보 없음";
-                ;
 
-                responses.add(new PhotoUploadResponse(imageUrl, address, takenAt));
+                String publicUrl = "https://" + cdn + "/" + key;
+                responses.add(new PhotoUploadResponse(publicUrl, address, takenAt));
             } catch (Exception e) {
                 responses.add(new PhotoUploadResponse(
                         null,
@@ -113,28 +155,16 @@ public class PhotoService {
                 ));
             }
         }
-
         return responses;
     }
 
-    private String saveFile(MultipartFile file) {
-        // TODO: 사진 클라우드 저장
-        String fileName = file.getOriginalFilename();
-        String ext = (fileName != null && fileName.contains(".")) ? fileName.substring(fileName.lastIndexOf(".")) : "";
-        String newFileName = UUID.randomUUID().toString() + ext;
+    private String buildSafeKey(String original) {
+        String src = (original == null || original.isBlank() ? "file" : original);
+        int dot = src.lastIndexOf(".");
+        String name = (dot > 0 ? src.substring(0, dot) : src);
+        String ext = (dot > 0 ? src.substring(dot) : "");
 
-        File dest = new File("uploads/" + newFileName);
-        File parent = dest.getParentFile();
-
-        if (!parent.exists() && !parent.mkdirs()) {
-            throw new FileStorageException("업로드 디렉토리를 생성할 수 없습니다: " + parent.getAbsolutePath());
-        }
-
-        try (FileOutputStream fos = new FileOutputStream(dest)) {
-            fos.write(file.getBytes());
-        } catch (Exception e) {
-            throw new FileStorageException("파일 저장 실패: " + file.getOriginalFilename(), e);
-        }
-        return "uploads/" + newFileName;
+        name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        return "images/" + UUID.randomUUID().toString() + "-" + name + ext;
     }
 }

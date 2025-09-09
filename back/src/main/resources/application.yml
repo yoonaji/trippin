@@ -35,10 +35,10 @@ spring:
     username: yunaji0824@gmail.com
     password: zxcdzrfnewtvulcg   # 2단계 인증 켠 뒤 발급
     properties:
-        mail:
-          smtp:
-            auth: true
-            starttls.enable: true
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
 
   security:
     oauth2:
@@ -128,3 +128,11 @@ management:
     health:
       probes:
         enabled: true   #k8s에서 /readness, /liveness 확인 가능.
+
+app:
+  s3:
+    enabled: true
+    region: ${APP_S3_REGION}
+    bucket: ${APP_S3_BUCKET}
+  cdn:
+    domain: ${APP_CDN_DOMAIN}
