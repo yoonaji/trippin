@@ -2,6 +2,7 @@ package com.springboot.be.repository;
 
 import com.springboot.be.entity.Friendship;
 import com.springboot.be.entity.FriendshipStatus;
+import com.springboot.be.entity.Post;
 import com.springboot.be.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -38,4 +39,19 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     ))
 """, nativeQuery = true)
     List<User> findFriendsUnion(@Param("email") String email);
+
+    @Query(value = """
+  SELECT * FROM post p
+  WHERE p.user_id IN (:friendIds)
+    AND p.is_shared = true
+    AND p.is_deleted = false
+  ORDER BY p.created_at DESC, p.id DESC
+  LIMIT :limit OFFSET :offset
+""", nativeQuery = true)
+    List<Post> findFriendsPostsPage(
+            @Param("friendIds") List<Long> friendIds,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
 }

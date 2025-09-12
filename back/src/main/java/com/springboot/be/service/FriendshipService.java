@@ -2,14 +2,13 @@ package com.springboot.be.service;
 
 import com.springboot.be.dto.request.SendFriendRequest;
 import com.springboot.be.dto.request.UnfriendRequest;
-import com.springboot.be.dto.response.FriendSearchResponse;
-import com.springboot.be.dto.response.FriendSummaryResponse;
-import com.springboot.be.dto.response.IdResponse;
-import com.springboot.be.dto.response.MessageResponse;
+import com.springboot.be.dto.response.*;
 import com.springboot.be.entity.Friendship;
 import com.springboot.be.entity.FriendshipStatus;
+import com.springboot.be.entity.Post;
 import com.springboot.be.entity.User;
 import com.springboot.be.repository.FriendshipRepository;
+import com.springboot.be.repository.PostRepository;
 import com.springboot.be.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +25,7 @@ import java.util.Optional;
 public class FriendshipService {
     private final FriendshipRepository friendshipRepo;
     private final UserRepository userRepo;
+    private final PostRepository postRepo;
 
     private User getUserOrThrow(String email) {
         return userRepo.findByEmail(email)
@@ -125,4 +125,29 @@ public class FriendshipService {
                         user.getProfileImage()
                 ));
     }
+
+    @Transactional
+    public List<PostSummaryDto> getFriendsPosts(String myEmail) {
+        // 1) 내 친구 id 목록 가져오기
+        List<Long> friendIds = listFriends(myEmail).stream()
+                .map(FriendSummaryResponse::id)
+                .toList();
+
+        if (friendIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 2) 친구들의 포스트 최신순 정렬로 전부 가져오기
+        List<Post> posts = postRepo
+                .findByUserIdInOrderByCreatedAtDesc(friendIds);
+
+        // 3) DTO 변환해서 반환
+        return posts.stream()
+                .map(PostSummaryDto::from)
+                .toList();
+    }
+
+
+
+
 }

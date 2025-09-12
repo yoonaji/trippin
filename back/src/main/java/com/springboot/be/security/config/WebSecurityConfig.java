@@ -74,6 +74,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                                 .requestMatchers("/oauth2/**").permitAll()
                                 .requestMatchers("/login/**").permitAll()
                                 .requestMatchers("/api/test/**").permitAll()
+                                .requestMatchers("/oauth/**").permitAll()
                                 .requestMatchers("/api/user/has-survey").permitAll()
                                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                                 .anyRequest().authenticated()
