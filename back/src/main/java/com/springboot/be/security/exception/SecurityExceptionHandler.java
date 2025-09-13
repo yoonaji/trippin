@@ -1,5 +1,8 @@
 package com.springboot.be.security.exception;
 
+import com.sun.jdi.request.DuplicateRequestException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class SecurityExceptionHandler {
 
@@ -45,5 +49,11 @@ public class SecurityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleOther(Exception ex) {
         return ResponseEntity.status(500).body(new ErrorResponse("INTERNAL_ERROR", "서버 오류가 발생했습니다."));
+    }
+
+    @ExceptionHandler(DuplicateRequestException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateRequestException ex) {
+        return ResponseEntity.status(409)
+                .body(new ErrorResponse("DUPLICATE", ex.getMessage()));
     }
 }

@@ -11,6 +11,7 @@ import {
     UserName,
 } from '../../styles/friendlist.ts';
 
+
 const ProfileImage = styled.View`
     width: 44px;
     height: 44px;
@@ -67,8 +68,8 @@ const FriendHomeScreen = () => {
     const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
     const [search, setSearch] = useState('');
 
-    const access_token = 'AIzaSyDnqmrx0UVsxzCmhZfW90j6gd96GrUuU60';   // 실제 토큰으로 변경?
-    const userEmail = 'yooonaji@khu.ac.kr';      
+    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1Nzc3MjE3OSwiZXhwIjoxNzU3NzczMDc5fQ.ZmzqE8pRVpsk3no7uEblIm8mY5fccuWBUTmK87uCUPk';   // 실제 토큰으로 변경?
+    const userEmail = 'yoonn__a@gmail.com';      
     
     
   // 친구 목록 API 

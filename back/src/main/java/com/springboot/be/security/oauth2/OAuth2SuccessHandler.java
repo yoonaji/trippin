@@ -66,6 +66,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         //앱 딥링크로 리다이렉트
         //프론트쪽에서
         String deeplink = "myapp://oauth2/callback?code=" + URLEncoder.encode(code, StandardCharsets.UTF_8);
+//        String deeplink = "http://localhost:8080/oauth/callback?code=" + URLEncoder.encode(code, StandardCharsets.UTF_8);
+
         response.sendRedirect(deeplink); // 바디 쓰지 말고 리다이렉트만
 
     }

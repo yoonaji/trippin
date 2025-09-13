@@ -98,6 +98,7 @@ server:
   tomcat:
     max-threads: 300
     min-spare-threads: 50
+  forward-headers-strategy: native #앱 내부에서 https 요청처럼 보이게하여 에러 방지.
 
 jwt:
   secret: "${JWT_SECRET}"
@@ -117,3 +118,13 @@ bezkoder:
 google:
   api:
     key: "${GOOGLE_API_KEY}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true   #k8s에서 /readness, /liveness 확인 가능.

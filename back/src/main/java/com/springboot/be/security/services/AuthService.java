@@ -66,19 +66,27 @@ public class AuthService {
         String refreshToken = jwtUtils.generateToken(userEmail, "refresh", 1000L * 60 * 60 * 24 * 30);
 
         User user = userRepository.findByEmail(userEmail).orElseThrow();
-        refreshRepository.findByUser(user).ifPresent(refreshRepository::delete);
+//        refreshRepository.findByUser(user).ifPresent(refreshRepository::delete);
 
         LocalDateTime expUtc = jwtUtils.getExpirationInstant(refreshToken)
                 .atZone(java.time.ZoneOffset.UTC)
                 .toLocalDateTime();
 
-        RefreshEntity tokenEntity = RefreshEntity.builder()
-                .user(user)
-                .token(refreshToken)
-                .expiryDate(expUtc)
-                .build();
+        refreshRepository.findByUser(user)
+                .ifPresentOrElse(
+                        existing -> existing.updateToken(refreshToken, expUtc), // JPA dirty checking → update
+                        () -> refreshRepository.save(
+                                RefreshEntity.ofUserToken(user, refreshToken, expUtc) // 새 엔티티 생성
+                        )
+                );
 
-        refreshRepository.save(tokenEntity);
+//        RefreshEntity tokenEntity = RefreshEntity.builder()
+//                .user(user)
+//                .token(refreshToken)
+//                .expiryDate(expUtc)
+//                .build();
+//
+//        refreshRepository.save(tokenEntity);
 
         return new JwtResponse(
                 accessToken,

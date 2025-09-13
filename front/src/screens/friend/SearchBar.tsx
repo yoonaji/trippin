@@ -16,7 +16,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onChangeText,
     placeholder = "이메일로 친구 추가",
 }) => {
-    const token = "your_access_token_here"; // 실제 토큰으로 교체
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1NzEyMjkzNywiZXhwIjoxNzU3MTIzODM3fQ.tKm-W0eOIoAxuRL1cbXTr8b0bE-8HA-AtSxvclCGAAk"; // 실제 토큰으로 교체
 
     useEffect(() => {
         if (!value) return;
