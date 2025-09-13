@@ -30,7 +30,7 @@ public class PasswordResetService {
             String tokenHash = sha256(rawToken);
             tokenStore.save(tokenHash, user.getId(), TOKEN_TTL);
 
-            String link = baseUrl + "/api/auth/reset?token=" + rawToken;
+            String link = baseUrl + "/reset?token=" + rawToken;
             mailService.sendPasswordResetMail(user.getEmail(), link, (int) TOKEN_TTL.toMinutes());
 
             System.out.println("로컬 개발용 토큰 확인 링크 : " + link + "배포 시에 제외할 것");
