@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
 import IconButton from '../../components/buttons/IconButton';
@@ -19,6 +19,7 @@ import stadium from '../../assets/images/data/sample_stadium.png';
 
 type Navigation = NativeStackNavigationProp<FriendStackParam>;
 
+const API_BASE = "http://10.0.2.2:8080";
 
   // 버튼 컨테이너
 const FloatingButtonContainer = styled.View`
@@ -39,27 +40,32 @@ const FloatingButtonWrapper = styled.View`
   margin-bottom: 8px; 
 `;
 
+
 const FriendHomeScreen = () => {
   const navigation = useNavigation<Navigation>();
   const [email, setEmail] = useState('');
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const posts = [
-    {
-      userName: '지윤아',
-      text: '대전에 있는 야구장에 갔다. 날이 더웠지만 맛있는 음식도 먹고 좋아하는 팀의 경기도 봐서 재밌었던 하루였다',
-      image: stadium, 
-    },
-    {
-      userName: '김민서',
-      text: '깔끔한 맛과 분위기가 좋아 자주 가는 맛집입니다.',
-      image: stadium, 
-    },
-    {
-      userName: '김예빈',
-      text: '한 입 먹는 순간 인상이 바뀌는 집. 재료 본연의 맛이 살아 있어서 자극적이지 않다.',
-      image: stadium, 
-    },
-  ];
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/friends/feed`);
+        const json = await res.json();
+        if (json.status === 200) {
+          setPosts(json.data);
+        } else {
+          console.error("API Error:", json.message);
+        }
+      } catch (error) {
+        console.error("Fetch Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
 
 
@@ -76,35 +82,38 @@ return (
     <ScrollView
       showsVerticalScrollIndicator={false}
     >
-      {posts.map((post, idx) => (
-        <Block key={idx}>
-          <Header>
-            <UserInfo>
-              <ProfileImage />
-              <UserName>{post.userName}</UserName>
-            </UserInfo>
-          </Header>
+        {posts.map((post) => (
+          <Block key={post.postId}>
+            <Header>
+              <UserInfo>
+                {post.authorProfileImage ? (
+                  <ProfileImage source={{ uri: post.authorProfileImage }} />
+                ) : (
+                  <ProfileImage />
+                )}
+                <UserName>{post.authorName}</UserName>
+              </UserInfo>
+            </Header>
 
-          <UserName style={{ marginTop: 16, fontWeight: 'normal', fontSize: 16 }}>
+            <ContentRow style={{ marginTop: 16 }}>
+              <LeftImage source={{ uri: post.thumbnailUrl }} />
+              <InfoArea>
+                <CustomText style={{ marginBottom: 6, fontSize: 15 }}>
+                  {post.title}
+                </CustomText>
+                <CustomText style={{ fontSize: 13, color: colors.gray8 }}>
+                  {/* 위에 gray 색체크 */}
+                  {post.period}
+                </CustomText>
+              </InfoArea>
+            </ContentRow>
 
-          <ContentRow>
-            <LeftImage source={post.image} />
-            <InfoArea>
-              <CustomText style={{ marginBottom: 6, fontSize: 15 }}>
-                {post.text}
-              </CustomText>
-            </InfoArea>
-          </ContentRow>
-
-        </UserName>
-
-        <IconGroup style={{ marginTop: 6 }}>
-          <IconImage source={heartIcon} />
-          <IconImage source={chatIcon} />
-        </IconGroup>
-
-        </Block>
-      ))}
+            <IconGroup style={{ marginTop: 6 }}>
+              <IconImage source={heartIcon} />
+              <IconImage source={chatIcon} />
+            </IconGroup>
+          </Block>
+        ))}
     </ScrollView>
 
       <FloatingButtonContainer>

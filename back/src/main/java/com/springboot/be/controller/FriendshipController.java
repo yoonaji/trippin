@@ -3,6 +3,7 @@ package com.springboot.be.controller;
 import com.springboot.be.dto.response.FriendSummaryResponse;
 import com.springboot.be.dto.response.IdResponse;
 import com.springboot.be.dto.response.MessageResponse;
+
 import com.springboot.be.security.services.UserDetailsImpl;
 import com.springboot.be.service.FriendshipService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.springboot.be.dto.request.SendFriendRequest;
 
 import java.util.List;
 
@@ -21,8 +23,8 @@ public class FriendshipController {
 
     // 친구 요청 보내기
     @PostMapping("/requests")
-    public IdResponse send(@AuthenticationPrincipal UserDetailsImpl principal, @RequestBody String req) {
-        return service.sendRequest(principal.getEmail(), req);
+    public IdResponse send(@AuthenticationPrincipal UserDetailsImpl principal, @RequestBody SendFriendRequest req) {
+        return service.sendRequest(principal.getEmail(), req.toEmail());
     }
 
     // 수락

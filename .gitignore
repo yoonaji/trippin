@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .env
 
 .idea
@@ -78,4 +77,4 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
->>>>>>> 488bf508866835f902d87fe432c4076ef3ae41e7
+
