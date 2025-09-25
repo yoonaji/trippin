@@ -4,7 +4,7 @@ import { colors } from './colors';
 export const Block = styled.View`
     width: 100%;
     padding: 20px;
-    margin-vertical: 5px;
+    margin: 5px 0;
     background-color: ${colors.sky};
     border-radius: 24px;
     elevation: 4;
@@ -27,7 +27,6 @@ export const UserInfo = styled.View`
 export const ProfileImage = styled.Image`
     width: 30px;
     height: 30px;
-    // background-color: gray;
     border-radius: 24px;
 `;
 
@@ -66,7 +65,6 @@ export const ContentRow = styled.View`
 export const LeftImage = styled.Image`
     width: 100px;
     height: 100px;
-    // margin-right: 14px;
     border-radius: 8px;
 
 `;

@@ -58,7 +58,7 @@ const FriendHomeScreen = () => {
   const [search, setSearch] = useState('');
 
   // 실제 토큰은 로그인 후 저장된 값 불러오기
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1Nzc3MjQ1NywiZXhwIjoxNzU3NzczMzU3fQ.cdRYGo9Ruu7_cgDEm2ylZbSUHeLQROJVg2qhKMtfCSQ';
+  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1ODUwMjcyOSwiZXhwIjoxNzU4NTAzNjI5fQ.jSBnY9z00nHMsp1tdc-aaoEB8GvlFunL-FVyWpEpe4U';
   const fromEmail = 'yoonn__a@gmail.com'; // 로그인 유저 이메일 (예시)
 
 // useEffect에서 데이터 정리

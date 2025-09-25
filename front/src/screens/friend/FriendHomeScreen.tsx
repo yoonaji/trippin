@@ -47,25 +47,35 @@ const FriendHomeScreen = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/friends/feed`);
-        const json = await res.json();
-        if (json.status === 200) {
-          setPosts(json.data);
-        } else {
-          console.error("API Error:", json.message);
-        }
-      } catch (error) {
-        console.error("Fetch Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const fetchPosts = async () => {
+    try {
+      const token =
+        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1ODUxMzE0OCwiZXhwIjoxNzU4NTE0MDQ4fQ.IWZnyZMjnYo7bTgPzAe2yww_O6Xzkso0YSyDq6vv9s0';
 
-    fetchPosts();
-  }, []);
+      const res = await fetch(`${API_BASE}/api/friends/feed`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const json = await res.json();
+      if (res.ok) {
+        setPosts(json.data);
+      } else {
+        console.error("API Error:", json.message);
+      }
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPosts();
+}, []);
 
 
 
@@ -79,42 +89,43 @@ return (
       style={{ marginTop: 16, marginHorizontal: 10 }}
     />
 
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-    >
-        {posts.map((post) => (
-          <Block key={post.postId}>
-            <Header>
-              <UserInfo>
-                {post.authorProfileImage ? (
-                  <ProfileImage source={{ uri: post.authorProfileImage }} />
-                ) : (
-                  <ProfileImage />
-                )}
-                <UserName>{post.authorName}</UserName>
-              </UserInfo>
-            </Header>
+<ScrollView showsVerticalScrollIndicator={false}>
+  {Array.isArray(posts) && posts.length > 0 ? (
+    posts.map((post, idx) => (
+      <Block key={post.postId ?? idx}>
+        <Header>
+          <UserInfo>
+            {post.authorProfileImage ? (
+              <ProfileImage source={{ uri: post.authorProfileImage }} />
+            ) : (
+              <ProfileImage />
+            )}
+            <UserName>{post.authorName || ""}</UserName>
+          </UserInfo>
+        </Header>
 
-            <ContentRow style={{ marginTop: 16 }}>
-              <LeftImage source={{ uri: post.thumbnailUrl }} />
-              <InfoArea>
-                <CustomText style={{ marginBottom: 6, fontSize: 15 }}>
-                  {post.title}
-                </CustomText>
-                <CustomText style={{ fontSize: 13, color: colors.gray8 }}>
-                  {/* 위에 gray 색체크 */}
-                  {post.period}
-                </CustomText>
-              </InfoArea>
-            </ContentRow>
+        <ContentRow style={{ marginTop: 16 }}>
+          {post.thumbnailUrl ? (
+            <LeftImage source={{ uri: post.thumbnailUrl }} />
+          ) : null}
 
-            <IconGroup style={{ marginTop: 6 }}>
-              <IconImage source={heartIcon} />
-              <IconImage source={chatIcon} />
-            </IconGroup>
-          </Block>
-        ))}
-    </ScrollView>
+          <InfoArea style={{ flex: undefined  }}>
+            <CustomText style={{ marginBottom: 6, fontSize: 15, color: colors.gray8 }}>
+              {post.title || "내용없음"}
+            </CustomText>
+          </InfoArea>
+        </ContentRow>
+
+        <IconGroup style={{ marginTop: 6 }}>
+          <IconImage source={heartIcon} />
+          <IconImage source={chatIcon} />
+        </IconGroup>
+      </Block>
+    ))
+  ) : (
+    <CustomText>게시글이 없습니다</CustomText>
+  )}
+</ScrollView>
 
       <FloatingButtonContainer>
         <FloatingButtonWrapper>

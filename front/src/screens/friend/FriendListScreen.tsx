@@ -68,7 +68,7 @@ const FriendHomeScreen = () => {
     const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
     const [search, setSearch] = useState('');
 
-    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1Nzc3MjE3OSwiZXhwIjoxNzU3NzczMDc5fQ.ZmzqE8pRVpsk3no7uEblIm8mY5fccuWBUTmK87uCUPk';   // 실제 토큰으로 변경?
+    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1ODUwMjcyOSwiZXhwIjoxNzU4NTAzNjI5fQ.jSBnY9z00nHMsp1tdc-aaoEB8GvlFunL-FVyWpEpe4U';   // 실제 토큰으로 변경?
     const userEmail = 'yoonn__a@gmail.com';      
     
     
@@ -102,37 +102,30 @@ useEffect(() => {
 
 
 
-    // 친구 삭제 함수
-    const onDeleteFriend = async (bEmail: string) => {
-        try {
-            const response = await fetch(`http://10.0.2.2:8080/api/friends`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${access_token}`,  
-                },
-                body: JSON.stringify({
-                    aEmail: userEmail,   // 현재 사용자
-                    bEmail: bEmail       // 삭제할 친구
-                })
-            });
-
-            if (!response.ok) {
-                console.error('삭제 요청 실패:', response.status);
-                return;
-            }
-
-            // 성공 케이스 처리
-            const result = await response.json();
-            if (result.message === 'UNFRIENDED') {
-                setFriendRequests(prev =>
-                    prev.filter(f => f.email !== bEmail)
-                );
-            }
-        } catch (error) {
-            console.error('삭제 중 오류 발생: ', error);
-        }
-    };
+// 친구 삭제 함수
+const onDeleteFriend = async (bEmail: string) => {
+  try { 
+    const response = await fetch(
+  `http://10.0.2.2:8080/api/friends?aEmail=${encodeURIComponent(userEmail)}&bEmail=${encodeURIComponent(bEmail)}`,
+  {
+    method: 'DELETE',
+    headers: {
+        'Authorization': `Bearer ${access_token}`,
+    },
+    }
+);
+    if (!response.ok) {
+        console.error('삭제 요청 실패:', response.status);
+        return;
+    }
+    const result = await response.text(); // 서버가 단순 메시지 반환하면 text()
+    if (result.includes('UNFRIENDED')) {
+        setFriendRequests(prev => prev.filter(f => f.email !== bEmail));
+    }
+    } catch (error) {
+    console.error('삭제 중 오류 발생: ', error);
+    }
+};
 
 
     return (
