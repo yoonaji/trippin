@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trippin-backend
+  namespace: default
+  labels:
+    app: trippin-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trippin-backend
+  template:
+    metadata:
+      labels:
+        app: trippin-backend
+    spec:
+      containers:
+        - name: trippin-backend
+          image: 330927539120.dkr.ecr.ap-northeast-2.amazonaws.com/trippin-backend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trippin-db
+                  key: url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: trippin-db
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trippin-db
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
