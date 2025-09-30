@@ -25,7 +25,7 @@ const MyPageScreen = () => {
     profileImage: null as string | null,
   });
   useEffect(() => {
-    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1ODU5NzI2NywiZXhwIjoxNzU4NTk4MTY3fQ.Vcd2iCxlDZIqkwOfoSdwFVuh6LxAfUcL8do__X7HleU";
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjQGdtYWlsLmNvbSIsImNhdGVnb3J5IjoiYWNjZXNzIiwiaWF0IjoxNzU5MjI2MTYzLCJleHAiOjE3NTkyMjcwNjN9.FttOgejXlHP3Ushf7BrPb52ZZ9WXL4C40CTQ16Z6E1Q";
     const fetchUserInfo = async () => {
       try {
         const response = await fetch("http://10.0.2.2:8080/api/users/me", {

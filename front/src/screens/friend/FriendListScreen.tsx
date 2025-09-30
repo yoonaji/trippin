@@ -68,7 +68,7 @@ const FriendHomeScreen = () => {
     const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
     const [search, setSearch] = useState('');
 
-    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1ODUwMjcyOSwiZXhwIjoxNzU4NTAzNjI5fQ.jSBnY9z00nHMsp1tdc-aaoEB8GvlFunL-FVyWpEpe4U';   // 실제 토큰으로 변경?
+    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1OTE1ODA4OSwiZXhwIjoxNzU5MTU4OTg5fQ.EMLOJSmzDd7BQa5QoGqwBermGL6XoO5YGEGpssHyaqs';   // 실제 토큰으로 변경?
     const userEmail = 'yoonn__a@gmail.com';      
     
     

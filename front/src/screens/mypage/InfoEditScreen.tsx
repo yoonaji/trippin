@@ -11,7 +11,7 @@ import ring from '../../assets/images/icon/ring.png';
 import company from '../../assets/images/icon/company.png';
 import axios from "axios";
 import { Alert } from "react-native";
-import { launchImageLibrary } from "react-native-image-picker";
+// import { launchImageLibrary } from "react-native-image-picker";
 
 // API URL
 const API_URL = "http://10.0.2.2:8080/api/users/me/username";
