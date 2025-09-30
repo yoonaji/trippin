@@ -102,13 +102,13 @@ const Onboarding = () => {
 
 export default Onboarding;
 
-export const SubText = styled(CustomText)`
+const SubText = styled(CustomText)`
   color: ${colors.gray7};
   font-size: 12px;
   margin-bottom: 16px;
 `;
 
-export const LogoText = styled.Text`
+const LogoText = styled.Text`
   color: ${colors.gray7};
   font-family: Ghanachocolate;
   font-weight: 400;
@@ -116,24 +116,24 @@ export const LogoText = styled.Text`
   margin-bottom: 65px;
 `;
 
-export const InputWrapper = styled.View`
+const InputWrapper = styled.View`
   width: 100%;
   margin-bottom: 16px;
 `;
 
-export const InputWrapper2 = styled.View`
+const InputWrapper2 = styled.View`
   width: 100%;
   margin-bottom: 38px;
 `;
 
-export const Label = styled(CustomText)`
+const Label = styled(CustomText)`
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 12px;
   color: ${colors.gray6};
 `;
 
-export const Input = styled.TextInput`
+const Input = styled.TextInput`
   width: 100%;
   border-bottom-width: 1px;
   border-bottom-color: ${colors.gray2};
@@ -142,51 +142,51 @@ export const Input = styled.TextInput`
   padding: 10px 0 10px 8px;
 `;
 
-export const SubMenu = styled.View`
+const SubMenu = styled.View`
   flex-direction: row;
   margin: 37px 0;
   justify-content: center;
   align-items: center;
 `;
 
-export const MenuText = styled.Text`
+const MenuText = styled.Text`
   font-size: 10px;
   color: ${colors.gray6};
 `;
 
-export const Divider = styled.Text`
+const Divider = styled.Text`
   color: ${colors.gray6};
   font-size: 10px;
   text-align-vertical: center;
   margin: 0 18px;
 `;
 
-export const DividerLineWrapper = styled.View`
+const DividerLineWrapper = styled.View`
   flex-direction: row;
   align-items: center;
   width: 100%;
   margin: 0;
 `;
 
-export const Line = styled.View`
+const Line = styled.View`
   flex: 1;
   height: 1px;
   background-color: ${colors.gray2};
 `;
 
-export const SmallGrayText = styled.Text`
+const SmallGrayText = styled.Text`
   font-size: 10px;
   color: ${colors.gray9};
   margin: 0 37px;
 `;
 
-export const SnsWrapper = styled.View`
+const SnsWrapper = styled.View`
   flex-direction: row;
   justify-content: center;
   margin-top: 23px;
 `;
 
-export const SnsButton = styled.TouchableOpacity<{
+const SnsButton = styled.TouchableOpacity<{
   bgColor?: string;
   size?: number;
 }>`
