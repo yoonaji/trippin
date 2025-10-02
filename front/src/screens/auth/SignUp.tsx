@@ -9,7 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../styles/colors';
 import PrimaryButton from '../../components/buttons/PrimaryButton';
 import { Dropdown } from 'react-native-element-dropdown';
-import { StyleSheet } from 'react-native';
+import { Alert, Platform, StyleSheet } from 'react-native';
+import Onboarding from '../onboarding/Onboarding';
 
 type Navigation = NativeStackNavigationProp<AuthStackParam>;
 
@@ -33,28 +34,136 @@ const getDays = (year: number, month: number) => {
   }));
 };
 
+const Base_URL = 'http://10.0.2.2:8080';
+const SignUp_URL = `${Base_URL}/api/auth/signup`;
+
 const SignUp = () => {
   const navigation = useNavigation<Navigation>();
   const { bottom } = useSafeAreaInsets();
-  const [gender, setGender] = useState('');
 
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [gender, setGender] = useState('');
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
   const [day, setDay] = useState<number | null>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const formatDate = (y: number, m: number, d: number) =>
+    `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+  const toServerGender = (g: string) =>
+    g === '여자' ? 'F' : g === '남자' ? 'M' : undefined;
+
+  const handleSignUp = async () => {
+    if (loading) return;
+
+    if (!email || !username || !password) {
+      Alert.alert('오류', '이메일, 아이디(닉네임), 비밀번호를 입력해 주세요.');
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      Alert.alert('오류', '이메일 형식이 올바르지 않습니다.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('오류', '비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    const birthDate =
+      year && month && day ? formatDate(year, month, day) : undefined;
+
+    const payload: Record<string, any> = {
+      email,
+      password,
+      nickname: username,
+    };
+
+    const g = toServerGender(gender);
+    if (g) payload.gender = g;
+    if (birthDate) payload.birthDate = birthDate;
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(SignUp_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        let detail = '';
+        try {
+          const err = await res.json();
+          detail = err?.message || JSON.stringify(err);
+        } catch (_) {}
+        throw new Error(`${res.status} ${res.statusText} ${detail}`);
+      }
+
+      const data = await res.json();
+      Alert.alert('회원가입 완료', data?.message ?? '가입이 완료되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => {
+            navigation.navigate('Onboarding');
+          },
+        },
+      ]);
+    } catch (e: any) {
+      Alert.alert(
+        '회원가입 실패',
+        e?.message ?? '네트워크 오류가 발생했습니다.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Container style={{ paddingBottom: bottom }}>
       <InputWrapper>
         <Label>아이디</Label>
-        <Input placeholder="아이디를 입력하세요. (6~20자)" />
+        <Input
+          placeholder="아이디를 입력하세요. (6~20자)"
+          value={username}
+          onChangeText={setUsername}
+        />
+      </InputWrapper>
+      <InputWrapper>
+        <Label>이메일</Label>
+        <Input
+          placeholder="이메일을 입력하세요."
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
       </InputWrapper>
       <InputWrapper>
         <Label>비밀번호</Label>
-        <Input placeholder="비밀번호를 입력하세요." secureTextEntry />
+        <Input
+          placeholder="비밀번호를 입력하세요."
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
       </InputWrapper>
       <InputWrapper>
         <Label>비밀번호 확인</Label>
-        <Input placeholder="비밀번호를 다시 입력하세요." secureTextEntry />
+        <Input
+          placeholder="비밀번호를 다시 입력하세요."
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
       </InputWrapper>
 
       <InputWrapper2>
@@ -120,9 +229,9 @@ const SignUp = () => {
       </InputWrapper3>
 
       <PrimaryButton
-        title="회원가입"
+        title={loading ? '회원가입 중...' : '회원가입'}
         color={colors.blue}
-        onPress={() => navigation.navigate('Main')}
+        onPress={loading ? undefined : handleSignUp}
         fontWeight="400"
       />
     </Container>
@@ -158,7 +267,7 @@ const InputWrapper2 = styled.View`
 
 const InputWrapper3 = styled.View`
   width: 100%;
-  margin-bottom: 132px;
+  margin-bottom: 30px;
 `;
 
 const Row = styled.View`

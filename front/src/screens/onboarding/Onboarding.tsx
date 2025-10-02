@@ -12,6 +12,8 @@ import google from '../../assets/images/icon/google.png';
 import IconButton from '../../components/buttons/IconButton';
 import CustomText from '../../components/ui/CustomText.tsx';
 import styled from 'styled-components/native';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 

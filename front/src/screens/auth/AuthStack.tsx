@@ -6,12 +6,14 @@ import CustomText from '../../components/ui/CustomText.tsx';
 import TabNavigator from '../../navigation/TabNavigator';
 import FindAccount from './FindAccount.tsx';
 import ResetPassword from './ResetPassword.tsx';
+import Onboarding from '../onboarding/Onboarding.tsx';
 
 export type AuthStackParam = {
   SignUp: undefined;
   Main: undefined;
   FindAccount: undefined;
   ResetPassword: undefined;
+  Onboarding: undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParam>();
@@ -42,6 +44,7 @@ const AuthStack = () => {
         component={SignUp}
         options={{ title: '회원가입' }}
       />
+      <Stack.Screen name="Onboarding" component={Onboarding} />
       <Stack.Screen
         name="FindAccount"
         component={FindAccount}
