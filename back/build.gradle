@@ -45,11 +45,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'com.drewnoakes:metadata-extractor:2.18.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation platform("software.amazon.awssdk:bom:2.27.3")
     implementation "software.amazon.awssdk:s3"
     implementation 'software.amazon.awssdk:sqs:2.27.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation('org.yaml:snakeyaml:2.3')
+    implementation 'net.datafaker:datafaker:2.5.1'
 }
 
 tasks.named('test') {
