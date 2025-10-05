@@ -14,11 +14,9 @@ import CustomText from '../../components/ui/CustomText.tsx';
 import styled from 'styled-components/native';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../../../axiosConfig.ts';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
-
-const Base_URL = 'http://10.0.2.2:8080';
-const SignIn_URL = `${Base_URL}/api/auth/signin`;
 
 const Onboarding = () => {
   const navigation = useNavigation<Navigation>();
@@ -38,22 +36,12 @@ const Onboarding = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(SignIn_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const res = await api.post('/api/auth/signin', {
+        email,
+        password,
       });
 
-      if (!res.ok) {
-        let detail = '';
-        try {
-          const err = await res.json();
-          detail = err?.message || JSON.stringify(err);
-        } catch (_) {}
-        throw new Error(`${res.status} ${res.statusText} ${detail}`);
-      }
-
-      const data = await res.json();
+      const data = res.data;
 
       await AsyncStorage.setItem('accessToken', data.accessToken);
       await AsyncStorage.setItem('refreshToken', data.refreshToken);
@@ -65,7 +53,12 @@ const Onboarding = () => {
         },
       ]);
     } catch (e: any) {
-      Alert.alert('로그인 실패', e?.message ?? '네트워크 오류가 발생했습니다.');
+      console.log(e);
+      const message =
+        e?.response?.data?.message ??
+        e?.message ??
+        '네트워크 오류가 발생했습니다.';
+      Alert.alert('로그인 실패', message);
     } finally {
       setLoading(false);
     }

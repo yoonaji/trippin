@@ -11,6 +11,7 @@ import PrimaryButton from '../../components/buttons/PrimaryButton';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Alert, Platform, StyleSheet } from 'react-native';
 import Onboarding from '../onboarding/Onboarding';
+import api from '../../../axiosConfig';
 
 type Navigation = NativeStackNavigationProp<AuthStackParam>;
 
@@ -33,9 +34,6 @@ const getDays = (year: number, month: number) => {
     value: i + 1,
   }));
 };
-
-const Base_URL = 'http://10.0.2.2:8080';
-const SignUp_URL = `${Base_URL}/api/auth/signup`;
 
 const SignUp = () => {
   const navigation = useNavigation<Navigation>();
@@ -63,12 +61,32 @@ const SignUp = () => {
   const handleSignUp = async () => {
     if (loading) return;
 
-    if (!email || !username || !password) {
-      Alert.alert('오류', '이메일, 아이디(닉네임), 비밀번호를 입력해 주세요.');
+    if (!email.trim()) {
+      Alert.alert('오류', '이메일을 입력해주세요.');
       return;
     }
     if (!emailRegex.test(email)) {
       Alert.alert('오류', '이메일 형식이 올바르지 않습니다.');
+      return;
+    }
+    if (!username.trim()) {
+      Alert.alert('오류', '아이디(닉네임)를 입력해주세요.');
+      return;
+    }
+    if (username.length > 45) {
+      Alert.alert('오류', '아이디는 45자 이하로 입력해주세요.');
+      return;
+    }
+    if (/\s/.test(username)) {
+      Alert.alert('오류', '아이디에 공백은 사용할 수 없습니다.');
+      return;
+    }
+    if (!password.trim()) {
+      Alert.alert('오류', '비밀번호를 입력해주세요.');
+      return;
+    }
+    if (password.length < 8) {
+      Alert.alert('오류', '비밀번호는 8자 이상으로 설정해주세요.');
       return;
     }
     if (password !== confirmPassword) {
@@ -80,9 +98,9 @@ const SignUp = () => {
       year && month && day ? formatDate(year, month, day) : undefined;
 
     const payload: Record<string, any> = {
+      username,
       email,
       password,
-      nickname: username,
     };
 
     const g = toServerGender(gender);
@@ -92,24 +110,9 @@ const SignUp = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(SignUp_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await api.post('/api/auth/signup', payload);
+      const data = await res.data;
 
-      if (!res.ok) {
-        let detail = '';
-        try {
-          const err = await res.json();
-          detail = err?.message || JSON.stringify(err);
-        } catch (_) {}
-        throw new Error(`${res.status} ${res.statusText} ${detail}`);
-      }
-
-      const data = await res.json();
       Alert.alert('회원가입 완료', data?.message ?? '가입이 완료되었습니다.', [
         {
           text: '확인',
@@ -119,10 +122,12 @@ const SignUp = () => {
         },
       ]);
     } catch (e: any) {
-      Alert.alert(
-        '회원가입 실패',
-        e?.message ?? '네트워크 오류가 발생했습니다.',
-      );
+      console.log('Signup Error:', e);
+      const message =
+        e?.response?.data?.message ??
+        e?.message ??
+        '네트워크 오류가 발생했습니다.';
+      Alert.alert('회원가입 실패', message);
     } finally {
       setLoading(false);
     }

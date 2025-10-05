@@ -66,18 +66,7 @@ const PostCard = ({ photo }: PostCardProps) => {
         </StatusView>
 
         <Content>
-          <Photo
-            source={{ uri: photo.imageUrl }}
-            resizeMode="cover"
-            onError={e => {
-              console.warn(
-                '❌ Image load failed:',
-                photo.imageUrl,
-                e.nativeEvent?.error,
-              );
-            }}
-            onLoad={() => console.log('✅ Image loaded:', photo.imageUrl)}
-          />
+          <Photo source={{ uri: photo.imageUrl }} resizeMode="cover" />
           <TextContent>
             <View>
               <PlaceWrapper>
