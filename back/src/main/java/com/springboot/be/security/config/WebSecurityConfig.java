@@ -67,6 +67,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
@@ -85,6 +86,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                                 .userInfoEndpoint(userInfo->userInfo
                                         .userService(customOauthService)
                                 )
+                                .redirectionEndpoint(ep -> ep.baseUri("/oauth/callback"))
                                 .successHandler(oAuth2SuccessHandler)
                 );
 
