@@ -91,6 +91,7 @@ jobs:
             GCS_DOMAIN=${{ secrets.GCS_DOMAIN }}
             CLOUD_SQL=${{ secrets.CLOUD_SQL }}
             DB_NAME=${{ secrets.DB_NAME }}
+            APP_S3_ENABLED: false
 
           flags: |
             --add-cloudsql-instances=${{ secrets.INSTANCE_CONNECTION_NAME }}
