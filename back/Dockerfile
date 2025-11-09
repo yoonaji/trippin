@@ -2,7 +2,7 @@
 FROM gradle:8.7-jdk17-jammy AS builder
 WORKDIR /app
 COPY . .
-RUN gradle clean build -x test && cp build/libs/*.jar build/libs/app.jar
+RUN gradle clean build -x test
 
 
 # 2단계: 실행용 이미지
