@@ -2,7 +2,10 @@ name: Deploy Spring Boot to Cloud Run
 
 on:
   push:
-    branches: [ main ] # main 브랜치에 푸시될 때 실행
+    branches:
+      - main
+      - backend/feature/test
+    # main 브랜치에 푸시될 때 실행
 
 # GCP 인증을 위한 권한
 permissions:
