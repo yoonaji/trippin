@@ -18,6 +18,25 @@ jobs:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
           POSTGRES_DB: testdb
+
+          INSTANCE_CONNECTION_NAME: "dummy-instance"
+          GCS_BUCKET: "dummy-bucket"
+          GCS_DOMAIN: "dummy-domain"
+          CLOUD_SQL: "dummy-sql"
+          GCP_PROJECT_ID: "dummy-project"
+          JWT_SECRET: "dummy-jwt-secret"
+          GOOGLE_CLIENT_ID: "dummy-id"
+          GOOGLE_CLIENT_SECRET: "dummy-secret"
+          NAVER_CLIENT_ID: "dummy-id"
+          NAVER_CLIENT_SECRET: "dummy-secret"
+          KAKAO_CLIENT_ID: "dummy-id"
+          KAKAO_CLIENT_SECRET: "dummy-secret"
+          GOOGLE_API_KEY: "dummy-key"
+          APP_S3_REGION: "dummy-region"
+          APP_S3_BUCKET: "dummy-bucket"
+          APP_CDN_DOMAIN: "dummy-cdn"
+          OPENAI_API_KEY: "dummy-key"
+
         ports:
           - 5432:5432
         options: >-
