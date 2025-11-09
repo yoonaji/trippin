@@ -16,7 +16,7 @@ permissions:
 env:
   GCP_PROJECT_ID: concrete-acre-477518-s2 # ⭐️ 본인 GCP 프로젝트 ID
   GCP_REGION: us-central1           # ⭐️ Cloud Run 리전 (서울)
-  GAR_REPOSITORY: cloud-run-source-deploy              # ⭐️ Artifact Registry 저장소 이름
+  GAR_REPOSITORY: trippin-repo             # ⭐️ Artifact Registry 저장소 이름
   SERVICE_NAME: trippin-backend           # ⭐️ Cloud Run에 배포될 서비스 이름
 
   # ⭐️ Cloud Run이 실행될 '런타임 서비스 계정' 이메일 (매우 중요!)
