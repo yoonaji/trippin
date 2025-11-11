@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: "postgres:latest"
+    image: "postgres:16"
     environment:
       - "POSTGRES_DB=${POSTGRES_DB}"
       - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
@@ -25,7 +25,7 @@ services:
       - "${SPRINGBOOT_PORT}:${SPRINGBOOT_PORT}"
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql:///${DB_NAME}?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=${INSTANCE_CONNECTION_NAME}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
@@ -38,6 +38,9 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       APP_S3_REGION: ${APP_S3_REGION}
       APP_S3_BUCKET: ${APP_S3_BUCKET}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCS_BUCKET: ${GCS_BUCKET}
+      GCS_DOMAIN: ${GCS_DOMAIN}
       APP_CDN_DOMAIN: ${APP_CDN_DOMAIN}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
 
