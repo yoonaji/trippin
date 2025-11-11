@@ -151,7 +151,10 @@ public class PhotoService {
                         SignUrlOption.withContentType() // Content-Type을 서명에 포함
                 );
 
-                String normalizedCdn = cdn.startsWith("http") ? cdn : "https://" + cdn;
+                String normalizedCdn = cdn.replaceFirst("^https://https://", "https://");
+                if (!normalizedCdn.startsWith("http")) {
+                    normalizedCdn = "https://" + normalizedCdn;
+                }
                 String publicUrl = normalizedCdn + "/" + key;
 
                 out.add(Map.of(
@@ -161,7 +164,7 @@ public class PhotoService {
                         "publicUrl", publicUrl
                 ));
             } catch (Exception e) {
-                // 로깅 추가 권장 (e.g., log.error("Failed to sign URL", e))
+                e.printStackTrace();
             }
         }
         return out;

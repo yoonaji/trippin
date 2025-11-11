@@ -2,19 +2,11 @@ spring:
   application:
     name: BE
 
-  cloud:
-    gcp:
-      sql:
-        # 1. Cloud SQL 인스턴스 연결 이름
-        instance-connection-name: ${CLOUD_SQL}
-        # 2. 연결할 데이터베이스 이름 (이것이 빠진 것입니다!)
-        database-name: ${DB_NAME}
-
   datasource:
-#    url: "${SPRING_DATASOURCE_URL}"
+    url: "${SPRING_DATASOURCE_URL}"
     username: "${SPRING_DATASOURCE_USERNAME}"
     password: "${SPRING_DATASOURCE_PASSWORD}"
-#    driver-class-name: org.postgresql.Driver
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:

@@ -23,8 +23,10 @@ services:
       - redis
     ports:
       - "${SPRINGBOOT_PORT}:${SPRINGBOOT_PORT}"
-
+    volumes:
+      - "C:/trippin/gcp-key.json:/app/gcp-key.json"
     environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-key.json
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
