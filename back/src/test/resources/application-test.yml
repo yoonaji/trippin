@@ -1,4 +1,10 @@
 spring:
+  cloud:
+    gcp:
+      sql:
+        enabled: false # GCP Cloud SQL 자동 설정을 비활성화
+      storage:
+        enabled: false # GCS 자동 설정을 비활성화
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
