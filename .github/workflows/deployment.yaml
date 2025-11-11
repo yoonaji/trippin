@@ -94,7 +94,6 @@ jobs:
             APP_S3_ENABLED: false
             APP_S3_REGION: "disabled"
             APP_S3_BUCKET: "disabled"
-            APP_CDN_DOMAIN: "disabled"
 
           flags: |
             --add-cloudsql-instances=${{ secrets.INSTANCE_CONNECTION_NAME }}
