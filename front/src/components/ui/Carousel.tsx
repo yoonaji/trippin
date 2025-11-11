@@ -84,12 +84,21 @@ const Carousel = ({
               }}
             >
               <Image
-                source={typeof item === 'string' ? { uri: item } : item}
+                source={
+                  typeof item === 'string'
+                    ? { uri: item }
+                    : item?.uri
+                    ? { uri: item.uri }
+                    : item
+                }
                 style={{
                   width: itemSize,
                   height: itemSize,
                   borderRadius: 12,
                   resizeMode: 'cover',
+                }}
+                onError={e => {
+                  console.log('❌ Image load error:', item, e.nativeEvent);
                 }}
               />
             </Animated.View>

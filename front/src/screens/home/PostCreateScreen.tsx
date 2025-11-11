@@ -220,6 +220,7 @@ const PostCreateScreen = () => {
       imageUrl: p.imageUrl ?? '',
       content: p.content.trim(),
       address: p.place.trim(),
+      buildingName: p.buildingName.trim(),
       takenAt: p.date ? new Date(p.date).toISOString() : null,
     }));
 
@@ -550,9 +551,10 @@ const SearchText = styled(CustomText)`
 
 const DateInfo = styled.View`
   width: 100%;
+  min-height: 48px;
   border-radius: 10px;
   background-color: ${colors.white};
-  padding: 8px 12px 4px 12px;
+  padding: 4px 12px 4px 12px;
   justify-content: center;
   shadow-color: #000;
   shadow-offset: 0px 2px;

@@ -27,18 +27,19 @@ const TabNavigator = () => {
       screenOptions={({ route }): BottomTabNavigationOptions => {
         const routeName = getFocusedRouteNameFromRoute(route) ?? '';
 
-        const isPostCreate = routeName === 'PostCreateScreen';
+        const hideTabBarRoutes = ['PostCreateScreen', 'PostConfirmScreen'];
+        const shouldHideTabBar = hideTabBarRoutes.includes(routeName);
 
         return {
           headerShown: false,
           tabBarStyle: {
             backgroundColor: colors.blue,
-            height: isPostCreate ? 0 : 115,
+            height: shouldHideTabBar ? 0 : 115,
             paddingTop: 10,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             overflow: 'hidden',
-            display: isPostCreate ? 'none' : 'flex',
+            display: shouldHideTabBar ? 'none' : 'flex',
           },
           tabBarActiveTintColor: colors.gray6,
           tabBarInactiveTintColor: colors.white,

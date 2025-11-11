@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: trippin-backend
-          image: 330927539120.dkr.ecr.ap-northeast-2.amazonaws.com/trippin-backend
+          image: trippin-backend
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
