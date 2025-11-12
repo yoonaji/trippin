@@ -8,7 +8,7 @@ interface WrapperProps {
 }
 
 export const PrimaryWrapper = styled(Pressable)<WrapperProps>`
-  background-color: ${colors.blue};
+  background-color: ${({ backgroundColor }) => backgroundColor || colors.blue};
   width: 100%;
   height: 55px;
   padding: 19px 0;

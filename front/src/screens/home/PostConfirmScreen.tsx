@@ -45,7 +45,11 @@ const PostConfirmScreen = () => {
     try {
       const finalData = { ...postData, title };
       await api.post('/api/posts', finalData);
-      Toast.show({ type: 'success', text1: '게시글이 등록되었습니다!' });
+      Toast.show({
+        type: 'success',
+        text1: '게시물 등록 완료',
+        text2: '등록된 게시물은 마이페이지에서 확인할 수 있습니다.',
+      });
       navigation.popToTop();
     } catch (e) {
       Toast.show({

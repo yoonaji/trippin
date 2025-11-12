@@ -25,6 +25,7 @@ import 'dayjs/locale/ko';
 import DateTimePicker, {
   DateTimePickerAndroid,
 } from '@react-native-community/datetimepicker';
+import { useLoading } from '../../components/ui/LoadingContext';
 dayjs.locale('ko');
 
 const showError = (title: string, message?: string) =>
@@ -98,6 +99,7 @@ const PostCreateScreen = () => {
   const [isEditingContent, setIsEditingContent] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const { setLoadingPromise } = useLoading();
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '';
@@ -124,44 +126,57 @@ const PostCreateScreen = () => {
 
   const handleSelectImage = async () => {
     const images = await pickImages(true, 30);
+
     if (images.length === 0) {
       showError('E_PICKER_EMPTY', '선택한 사진이 없습니다.');
       return;
     }
 
+    if (images.length === 0) {
+      showError('선택 취소', '기존 이미지를 유지합니다.');
+      return;
+    }
+
+    setActiveIndex(0);
     setSelectedImages(images);
-
+    setPhotoInfos([]);
     try {
-      const presignRes = await withTimeout(
-        api.post(
-          '/api/photos/upload?presign',
-          images.map(img => ({
-            filename: img.fileName,
-            contentType: img.type,
-          })),
-        ),
-        15000,
+      const completeData = await setLoadingPromise(
+        (async () => {
+          const presignRes = await withTimeout(
+            api.post(
+              '/api/photos/upload?presign',
+              images.map(img => ({
+                filename: img.fileName,
+                contentType: img.type,
+              })),
+            ),
+            15000,
+          );
+
+          const presigned = presignRes.data?.data ?? [];
+          if (!Array.isArray(presigned) || presigned.length !== images.length) {
+            throw new Error('LENGTH_MISMATCH');
+          }
+
+          for (let i = 0; i < presigned.length; i++) {
+            const image = images[i];
+            const res = await fetch(image.uri);
+            const blob = await res.blob();
+            await uploadWithRetry(presigned[i].uploadUrl, blob, image.type);
+          }
+
+          const objectKeys = presigned.map(p => p.objectKey);
+          const completeRes = await withTimeout(
+            api.post('/api/photos/upload?complete', objectKeys),
+            15000,
+          );
+
+          return completeRes.data?.data ?? [];
+        })(),
+        '사진 불러오는 중...',
       );
 
-      const presigned = presignRes.data?.data ?? [];
-      if (!Array.isArray(presigned) || presigned.length !== images.length) {
-        throw new Error('LENGTH_MISMATCH');
-      }
-
-      for (let i = 0; i < presigned.length; i++) {
-        const image = images[i];
-        const res = await fetch(image.uri);
-        const blob = await res.blob();
-        await uploadWithRetry(presigned[i].uploadUrl, blob, image.type);
-      }
-
-      const objectKeys = presigned.map(p => p.objectKey);
-      const completeRes = await withTimeout(
-        api.post('/api/photos/upload?complete', objectKeys),
-        15000,
-      );
-
-      const completeData = completeRes.data?.data ?? [];
       if (!Array.isArray(completeData)) throw new Error('INVALID_RESPONSE');
 
       setPhotoInfos(
@@ -216,6 +231,23 @@ const PostCreateScreen = () => {
   };
 
   const handleNext = () => {
+    if (selectedImages.length === 0 || photoInfos.length === 0) {
+      showError('이미지 없음', '사진을 선택해주세요.');
+      return;
+    }
+
+    const invalidIndex = photoInfos.findIndex(
+      p => !p.place.trim() || !p.date.trim(),
+    );
+
+    if (invalidIndex !== -1) {
+      showError(
+        '입력 누락',
+        `${invalidIndex + 1}번째 사진의 주소와 날짜를 모두 입력해주세요.`,
+      );
+      return;
+    }
+
     const formattedPhotos = photoInfos.map(p => ({
       imageUrl: p.imageUrl ?? '',
       content: p.content.trim(),
@@ -267,173 +299,176 @@ const PostCreateScreen = () => {
           </ImageSelectButton>
         </ImageSelectWrapper>
       )}
-
-      <InfoSection>
-        <PlaceInfo>
-          <Row>
-            <IconWrapper>
-              <Icon source={place} />
-            </IconWrapper>
-            <Column>
-              {selectedImages.length > 0 && (
-                <>
-                  {photoInfos[activeIndex]?.place ? (
+      {selectedImages.length > 0 && (
+        <>
+          <InfoSection>
+            <PlaceInfo>
+              <Row>
+                <IconWrapper>
+                  <Icon source={place} />
+                </IconWrapper>
+                <Column>
+                  {selectedImages.length > 0 && (
                     <>
-                      {isEditingPlace ||
-                      !photoInfos[activeIndex]?.buildingName ? (
-                        <StyledPlaceInput
-                          placeholder="장소명을 입력하세요"
-                          value={photoInfos[activeIndex]?.buildingName}
-                          onChangeText={text =>
-                            handleInfoChange('buildingName', text)
-                          }
-                          onFocus={() => setIsEditingPlace(true)}
-                          onBlur={() => setIsEditingPlace(false)}
-                          multiline={false}
-                          submitBehavior="blurAndSubmit"
-                          returnKeyType="done"
-                        />
+                      {photoInfos[activeIndex]?.place ? (
+                        <>
+                          {isEditingPlace ||
+                          !photoInfos[activeIndex]?.buildingName ? (
+                            <StyledPlaceInput
+                              placeholder="장소명을 입력하세요"
+                              value={photoInfos[activeIndex]?.buildingName}
+                              onChangeText={text =>
+                                handleInfoChange('buildingName', text)
+                              }
+                              onFocus={() => setIsEditingPlace(true)}
+                              onBlur={() => setIsEditingPlace(false)}
+                              multiline={false}
+                              submitBehavior="blurAndSubmit"
+                              returnKeyType="done"
+                            />
+                          ) : (
+                            <BuildingNameText
+                              onPress={() => setIsEditingPlace(true)}
+                            >
+                              {photoInfos[activeIndex]?.buildingName}
+                            </BuildingNameText>
+                          )}
+
+                          <AddressText>
+                            {photoInfos[activeIndex]?.place}
+                          </AddressText>
+
+                          <ReSearchButton
+                            onPress={() => addressRef.current?.open()}
+                          >
+                            <ReSearchText>주소 재검색</ReSearchText>
+                          </ReSearchButton>
+                        </>
                       ) : (
-                        <BuildingNameText
-                          onPress={() => setIsEditingPlace(true)}
-                        >
-                          {photoInfos[activeIndex]?.buildingName}
-                        </BuildingNameText>
+                        <>
+                          <SearchButton
+                            onPress={() => addressRef.current?.open()}
+                          >
+                            <SearchText>주소 검색</SearchText>
+                          </SearchButton>
+                        </>
                       )}
-
-                      <AddressText>
-                        {photoInfos[activeIndex]?.place}
-                      </AddressText>
-
-                      <ReSearchButton
-                        onPress={() => addressRef.current?.open()}
-                      >
-                        <ReSearchText>주소 재검색</ReSearchText>
-                      </ReSearchButton>
-                    </>
-                  ) : (
-                    <>
-                      <SearchButton onPress={() => addressRef.current?.open()}>
-                        <SearchText>주소 검색</SearchText>
-                      </SearchButton>
+                      <AddressSearchBox
+                        ref={addressRef}
+                        onSelect={(mainAddress, buildingName, zonecode) => {
+                          setPhotoInfos(prev => {
+                            const next = [...prev];
+                            const cur = next[activeIndex] ?? {
+                              place: '',
+                              date: '',
+                              buildingName: '',
+                              content: '',
+                            };
+                            next[activeIndex] = {
+                              ...cur,
+                              place: mainAddress,
+                              buildingName,
+                            };
+                            return next;
+                          });
+                        }}
+                      />
                     </>
                   )}
-                  <AddressSearchBox
-                    ref={addressRef}
-                    onSelect={(mainAddress, buildingName, zonecode) => {
-                      setPhotoInfos(prev => {
-                        const next = [...prev];
-                        const cur = next[activeIndex] ?? {
-                          place: '',
-                          date: '',
-                          buildingName: '',
-                          content: '',
-                        };
-                        next[activeIndex] = {
-                          ...cur,
-                          place: mainAddress,
-                          buildingName,
-                        };
-                        return next;
-                      });
-                    }}
-                  />
-                </>
-              )}
-            </Column>
-          </Row>
-        </PlaceInfo>
+                </Column>
+              </Row>
+            </PlaceInfo>
 
-        <DateInfo>
-          <Row>
-            <IconWrapper>
-              <Icon source={calendar} />
-            </IconWrapper>
-            {selectedImages.length === 0 ? (
-              <></>
-            ) : photoInfos[activeIndex]?.date ? (
-              <>
-                <DateDiplayButton
-                  onPress={() => {
-                    if (Platform.OS === 'android') {
-                      handleOpenDatePicker();
-                    } else {
-                      setShowDatePicker(true);
+            <DateInfo>
+              <Row>
+                <IconWrapper>
+                  <Icon source={calendar} />
+                </IconWrapper>
+                {selectedImages.length === 0 ? (
+                  <></>
+                ) : photoInfos[activeIndex]?.date ? (
+                  <>
+                    <DateDiplayButton
+                      onPress={() => {
+                        if (Platform.OS === 'android') {
+                          handleOpenDatePicker();
+                        } else {
+                          setShowDatePicker(true);
+                        }
+                      }}
+                    >
+                      <DateDisplayText>
+                        {formatDate(photoInfos[activeIndex]?.date)}
+                      </DateDisplayText>
+                    </DateDiplayButton>
+                  </>
+                ) : (
+                  <>
+                    <DateSelectButton onPress={handleOpenDatePicker}>
+                      <DateText>날짜 선택</DateText>
+                    </DateSelectButton>
+                  </>
+                )}
+              </Row>
+
+              {Platform.OS === 'ios' && showDatePicker && (
+                <DateTimePicker
+                  value={
+                    photoInfos[activeIndex]?.date
+                      ? new Date(photoInfos[activeIndex]?.date)
+                      : new Date()
+                  }
+                  mode="datetime"
+                  is24Hour={false}
+                  display="spinner"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      const local = dayjs(selectedDate).format(
+                        'YYYY-MM-DDTHH:mm:ss',
+                      );
+                      handleInfoChange('date', local);
                     }
                   }}
-                >
-                  <DateDisplayText>
-                    {formatDate(photoInfos[activeIndex]?.date)}
-                  </DateDisplayText>
-                </DateDiplayButton>
-              </>
-            ) : (
-              <>
-                <DateSelectButton onPress={handleOpenDatePicker}>
-                  <DateText>날짜 선택</DateText>
-                </DateSelectButton>
-              </>
-            )}
-          </Row>
-
-          {Platform.OS === 'ios' && showDatePicker && (
-            <DateTimePicker
-              value={
-                photoInfos[activeIndex]?.date
-                  ? new Date(photoInfos[activeIndex]?.date)
-                  : new Date()
-              }
-              mode="datetime"
-              is24Hour={false}
-              display="spinner"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  const local = dayjs(selectedDate).format(
-                    'YYYY-MM-DDTHH:mm:ss',
-                  );
-                  handleInfoChange('date', local);
-                }
-              }}
-            />
-          )}
-        </DateInfo>
-
-        <ContentInfo>
-          <Row>
-            <IconWrapper>
-              <Icon source={content} />
-            </IconWrapper>
-            <Column style={{ flex: 1 }}>
-              {isEditingContent || !photoInfos[activeIndex]?.content ? (
-                <StyledInput
-                  placeholder={
-                    selectedImages.length > 0 ? '내용을 입력하세요' : ''
-                  }
-                  value={
-                    selectedImages.length > 0
-                      ? photoInfos[activeIndex]?.content
-                      : ''
-                  }
-                  editable={selectedImages.length > 0}
-                  onChangeText={text => handleInfoChange('content', text)}
-                  multiline
-                  onFocus={() => setIsEditingContent(true)}
-                  onBlur={() => setIsEditingContent(false)}
-                  submitBehavior="blurAndSubmit"
-                  returnKeyType="done"
                 />
-              ) : (
-                <GrayContentText onPress={() => setIsEditingContent(true)}>
-                  {photoInfos[activeIndex]?.content}
-                </GrayContentText>
               )}
-            </Column>
-          </Row>
-        </ContentInfo>
-      </InfoSection>
+            </DateInfo>
 
-      {selectedImages.length > 0 && (
-        <PrimaryButton title="완료" onPress={handleNext} />
+            <ContentInfo>
+              <Row>
+                <IconWrapper>
+                  <Icon source={content} />
+                </IconWrapper>
+                <Column style={{ flex: 1 }}>
+                  {isEditingContent || !photoInfos[activeIndex]?.content ? (
+                    <StyledInput
+                      placeholder={
+                        selectedImages.length > 0 ? '내용을 입력하세요' : ''
+                      }
+                      value={
+                        selectedImages.length > 0
+                          ? photoInfos[activeIndex]?.content
+                          : ''
+                      }
+                      editable={selectedImages.length > 0}
+                      onChangeText={text => handleInfoChange('content', text)}
+                      multiline
+                      onFocus={() => setIsEditingContent(true)}
+                      onBlur={() => setIsEditingContent(false)}
+                      submitBehavior="blurAndSubmit"
+                      returnKeyType="done"
+                    />
+                  ) : (
+                    <GrayContentText onPress={() => setIsEditingContent(true)}>
+                      {photoInfos[activeIndex]?.content}
+                    </GrayContentText>
+                  )}
+                </Column>
+              </Row>
+            </ContentInfo>
+          </InfoSection>
+
+          <PrimaryButton title="완료" onPress={handleNext} />
+        </>
       )}
     </Container>
   );

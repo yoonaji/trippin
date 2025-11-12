@@ -19,6 +19,7 @@
     "@react-navigation/native-stack": "^7.3.21",
     "axios": "^1.10.0",
     "dayjs": "^1.11.19",
+    "lottie-react-native": "^7.3.4",
     "react": "19.1.0",
     "react-native": "0.80.1",
     "react-native-dropdown-picker": "^5.4.6",
