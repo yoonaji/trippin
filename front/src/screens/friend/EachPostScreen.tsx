@@ -6,16 +6,16 @@ import styled from 'styled-components/native';
 import { colors } from '../../styles/colors';
 import { Block, Header, UserInfo, ProfileImage, UserName } from '../../styles/write.ts';
 
-// API 설정 
+//  API 설정
 const API_BASE = 'http://10.0.2.2:8080';
 const token =
-  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhQGdtYWlsLmNvbSIsImNhdGVnb3J5IjoiYWNjZXNzIiwiaWF0IjoxNzYyNTgwOTY1LCJleHAiOjE3NjI1ODE4NjV9.WBqSlvZhmHdjaFvYJPChkfkrY2v8hmgqDsNBtXh4RXA';
+  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhQGdtYWlsLmNvbSIsImNhdGVnb3J5IjoiYWNjZXNzIiwiaWF0IjoxNzYyOTU1NzE5LCJleHAiOjE3NjI5NTY2MTl9.YdOIVQykKt6liaMJl28zB4Fd6cCwZl9yiXe96juiN9k';
 
-type MyPageStackParam = {
-  EachPostScreen: { postId: number };
+type FriendStackParam = {
+  EachPostScreen: { postId: number }; //  Friend 기반으로 변경
 };
 
-type EachPostScreenRouteProp = RouteProp<MyPageStackParam, 'EachPostScreen'>;
+type EachPostScreenRouteProp = RouteProp<FriendStackParam, 'EachPostScreen'>;
 
 const ContentColumn = styled.View`
   flex-direction: column;
@@ -48,25 +48,15 @@ const CommentText = styled.Text`
   margin-top: 2px;
 `;
 
-const EditButton = styled.Text`
-  background-color: ${colors.blue};
-  color: #fff;
-  padding: 14px 120px;
-  border-radius: 30px;
-  font-weight: bold;
-  font-size: 16px;
-  overflow: hidden;
-  text-align: center;
-`;
-
 const EachPostScreen = () => {
   const route = useRoute<EachPostScreenRouteProp>();
   const { postId } = route.params;
 
   const [postData, setPostData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState<any[]>([]);
 
-  const fetchPostDetail = async () => {
+  const fetchFriendPostDetail = async () => {
     try {
       const response = await fetch(`${API_BASE}/api/posts/${postId}`, {
         method: 'GET',
@@ -78,21 +68,43 @@ const EachPostScreen = () => {
       const result = await response.json();
       setPostData(result.data);
     } catch (error) {
-      console.log('❌ 게시글 상세 조회 실패:', error);
+      console.log(' 친구 게시글 상세 조회 실패:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPostDetail();
-  }, []);
+  const fetchComments = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/users/me/comments`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  const comments = [
-    { user: 'Jiwon', text: '재밌었어? 다음에 같이 가자' },
-    { user: 'YUJIN', text: '먹으러 감?' },
-    { user: 'ID857', text: '나도 오늘 대구 다녀왔어' },
-  ];
+    const result = await response.json();
+    if (result.success) {
+      setComments(result.data);
+    }
+  } catch (error) {
+    console.log('댓글 조회 실패:', error);
+  }
+};
+
+
+  
+
+useEffect(() => {
+  fetchFriendPostDetail();
+  fetchComments();
+}, []);
+
+
+  // const comments = [
+  //   { user: 'Minji', text: '헐 여긴 어디야 너무 예쁘다!' },
+  //   { user: 'Jiwon', text: '나도 가보고 싶어!' },
+  // ];
 
   if (loading) {
     return (
@@ -114,7 +126,6 @@ const EachPostScreen = () => {
     <Container style={{ backgroundColor: colors.white }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Block>
-          {/* 유저 정보 */}
           <Header>
             <UserInfo>
               <ProfileImage
@@ -129,7 +140,6 @@ const EachPostScreen = () => {
           </Header>
 
           <ContentColumn>
-            {/* 사진 1장만 표시 */}
             {postData.photos?.length > 0 && (
               <PostImage
                 source={{ uri: postData.photos[0].imageUrl }}
@@ -146,8 +156,7 @@ const EachPostScreen = () => {
                 {postData.period}
               </Text>
             </View>
-
-            {/* 댓글은 더미로 유지 */}
+{/* 
             <View style={{ marginTop: 10 }}>
               {comments.map((cmt, idx) => (
                 <CommentBlock key={idx}>
@@ -155,13 +164,19 @@ const EachPostScreen = () => {
                   <CommentText>{cmt.text}</CommentText>
                 </CommentBlock>
               ))}
+            </View> */}
+
+            <View style={{ marginTop: 10 }}>
+              {comments.map((cmt) => (
+                <CommentBlock key={cmt.commentId}>
+                  <CommentUser>{cmt.authorName}</CommentUser>
+                  <CommentText>{cmt.comment}</CommentText>
+                </CommentBlock>
+              ))}
             </View>
+
           </ContentColumn>
         </Block>
-
-        <View style={{ alignItems: 'center', marginVertical: 20 }}>
-          <EditButton>수정하기</EditButton>
-        </View>
       </ScrollView>
     </Container>
   );

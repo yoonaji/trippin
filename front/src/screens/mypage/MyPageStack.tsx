@@ -37,9 +37,9 @@ const MyPageStack = () => {
           title: 'My Page',
           headerTitleAlign: 'center',
           // 원래 위에 있던 설정 아이콘
-          // headerRight: () => (
-          //   <IconButton icon={setting} size={35} onPress={() => navigation.navigate('InfoEditScreen')}/>
-          // ),
+          headerRight: () => (
+            <IconButton icon={setting} size={25} onPress={() => navigation.navigate('InfoEditScreen')}/>
+          ),
         })}
       />
 

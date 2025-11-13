@@ -44,7 +44,7 @@ type Post = {
 
 const API_BASE = 'http://10.0.2.2:8080';
 const token =
-  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1OTE1OTAwNSwiZXhwIjoxNzU5MTU5OTA1fQ.k1yDkkBQK04g-ypmLK3OJX4CiRUvNnn8RODA3_nOOKI';
+  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiQGdtYWlsLmNvbSIsImNhdGVnb3J5IjoiYWNjZXNzIiwiaWF0IjoxNzYzMDA0MTUyLCJleHAiOjE3NjMwMDUwNTJ9.gmxD9gfhafhlJ2pFhgwSbnqGQk9B4mt6R67ZrvbOMB0';
 
 const FloatingButtonContainer = styled.View`
   position: absolute;
@@ -191,14 +191,6 @@ const handleUnlike = async (photoId: number) => {
 
   return (
     <Container>
-      <SearchBar
-        value={email}
-        onChangeText={setEmail}
-        placeholder="이메일로 친구 추가"
-        onClear={() => setEmail('')}
-        style={{ marginTop: 16, marginHorizontal: 10 }}
-      />
-
       {loading ? (
         <View
           style={{
@@ -213,6 +205,12 @@ const handleUnlike = async (photoId: number) => {
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           {posts.map((post, idx) => (
+            <TouchableOpacity
+              key={post.postId ?? idx}
+              onPress={() => navigation.navigate('EachPostScreen', { postId: post.postId })}
+              activeOpacity={0.8}
+            >
+
             <Block key={post.postId ?? idx}>
               <Header>
                 <UserInfo>
@@ -262,16 +260,21 @@ const handleUnlike = async (photoId: number) => {
                 <IconImage source={chatIcon} />
               </IconGroup>
             </Block>
+          </TouchableOpacity>
+
           ))}
         </ScrollView>
       )}
 
       <FloatingButtonContainer>
         <FloatingButtonWrapper>
+
+          <Image style={{tintColor:'white'}}/>
           <IconButton
             icon={listIcon}
             size={25}
-            color={colors.white}
+            
+            // color={colors.white}
             onPress={() => navigation.navigate('FriendListScreen')}
           />
         </FloatingButtonWrapper>
@@ -279,8 +282,9 @@ const handleUnlike = async (photoId: number) => {
         <FloatingButtonWrapper>
           <IconButton
             icon={plus}
-            size={35}
-            color={colors.white}
+            size={20}
+            
+            // color={colors.white}
             onPress={() => navigation.navigate('AddFriendScreen')}
           />
         </FloatingButtonWrapper>

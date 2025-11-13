@@ -1,44 +1,47 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react'; 
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
-import { useNavigation } from '@react-navigation/native';
-import { Text, View ,Image, ScrollView, TouchableOpacity, Modal, FlatList, Pressable, StyleSheet } from 'react-native';
+// import { useNavigation } from '@react-navigation/native'; 
+import {
+  Text,
+  View,
+  // Image, 
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Platform, //  Platform 추가
+  ActivityIndicator, //  ActivityIndicator 추가
+} from 'react-native';
 
-import { Block, Header, UserInfo, ProfileImage, UserName, IconGroup, IconImage, ContentRow, LeftImage, InfoArea } from '../../styles/write.ts';
-import heartIcon from '../../assets/images/icon/filledheart.png';
+// import { Block, Header, UserInfo, ProfileImage, UserName, IconGroup, IconImage, ContentRow, LeftImage, InfoArea } from '../../styles/write.ts';
+// import heartIcon from '../../assets/images/icon/filledheart.png';
 import styled from 'styled-components/native';
 import { colors } from '../../styles/colors';
-import chatIcon from '../../assets/images/icon/chat.png';
-import { HeaderRow, IconCircle } from './InfoEditScreen.tsx'
+// import chatIcon from '../../assets/images/icon/chat.png';
+import { HeaderRow } from './InfoEditScreen.tsx'; // IconCircle 제거 (미사용)
 import IconButton from '../../components/buttons/IconButton';
 import record from '../../assets/images/icon/record.png';
 
+type Marker = {
+  id: number;
+  placeName: string;
+  lat: number;
+  lng: number;
+  photoCount: number;
+  orderIndex: number;
+};
 
-
-  const posts = [
-  {
-    userName: '지윤아',
-    location: '대전한화생명볼파크',
-    date: '2025-03-04',
-    text: '대전에 있는 야구장에 갔다. 야구장에 처음 가봤는데 생각했던 것 보다 재미있었다. 다음에 또...',
-    image: require('../../assets/images/data/sample_stadium.png'),
-  },
-    {
-    userName: '지윤아',
-    location: '대전한화생명볼파크',
-    date: '2025-03-04',
-    text: '대전에 있는 야구장에 갔다. 야구장에 처음 가봤는데 생각했던 것 보다 재미있었다. 다음에 또...',
-    image: require('../../assets/images/data/sample_stadium.png'),
-    },
-    {
-    userName: '지윤아',
-    location: '대전한화생명볼파크',
-    date: '2025-03-04',
-    text: '대전에 있는 야구장에 갔다. 야구장에 처음 가봤는데 생각했던 것 보다 재미있었다. 다음에 또...',
-    image: require('../../assets/images/data/sample_stadium.png'),
-    },
-  ];
-
+type Route = {
+  routeId: number;
+  routeName: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  markers: Marker[];
+};
 
 
 function CustomDropdown({
@@ -105,12 +108,47 @@ function CustomDropdown({
   );
 }
 
+const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
+const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E';
+
+
 const RouteScreen = () => {
-  const [selectedPost, setSelectedPost] = useState<number | null>(null);
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/api/users/me/routes`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const json = await res.json();
+        if (res.ok && Array.isArray(json.data)) {
+          setRoutes(json.data);
+        } else {
+          console.error('API Error:', json?.message ?? res.status);
+        }
+      } catch (error) {
+        console.error('Fetch Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRoutes();
+  }, []);
+
 
   const dropdownItems = useMemo(
-    () => posts.map((p, i) => ({ label: `${p.location} · ${p.date}`, value: i })),
-    []
+    () => routes.map(route => ({
+      label: route.routeName || route.title, // routeName을 기본으로 사용
+      value: route.routeId,
+    })),
+    [routes]
   );
 
 return ( 
@@ -120,24 +158,27 @@ return (
       <CustomText style={{ fontSize: 16, fontWeight: "700" ,color:colors.blue}}> 
         <FloatingButtonContainer> 
           <FloatingButtonWrapper> 
-            <IconButton icon={record} size={25} /> 
+            <IconButton icon={record} size={15} /> 
             </FloatingButtonWrapper> 
             </FloatingButtonContainer> 
             내 여행기록 
             </CustomText> 
             </HeaderRow>
 
-
+      {loading ? (
+        <ActivityIndicator size="large" style={{ marginTop: 20 }} color={colors.blue} />
+      ) : (
         <View style={{ marginHorizontal: 12, marginTop: 8 }}>
           <CustomDropdown
             items={dropdownItems}
-            value={selectedPost}
-            onChange={setSelectedPost}
-            placeholder="포스팅을 선택하세요           "
+            value={selectedRouteId} //  상태 변수명 변경
+            onChange={setSelectedRouteId} //  상태 변수명 변경
+            placeholder="여행 경로를 선택하세요           " //  placeholder 수정
           />
         </View>
-      </ScrollView>
-    </Container>
+      )}
+    </ScrollView>
+  </Container>
   );
 };
 

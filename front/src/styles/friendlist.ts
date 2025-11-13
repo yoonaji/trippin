@@ -2,9 +2,9 @@ import styled from 'styled-components/native';
 import { colors } from '../styles/colors';
 
 export const ButtonBase = styled.TouchableOpacity`
-    min-width: 50px;
+    min-width: 60px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 16px;
     justify-content: center;
     align-items: center;
     margin-left: 6px;
@@ -28,11 +28,14 @@ export const UserName = styled.Text`
 
 export const AcceptButton = styled(ButtonBase)`
     background: ${colors.blue};    
-    margin-right: 22px;
 `;
 
 export const RejectButton = styled(ButtonBase)`
-    background: ${colors.gray1}; 
+    background: ${colors.white}; 
+    border-color: ${colors.blue};  
+    border-width: 1px;
+    margin-right: 22px;
+
 `;
 
 export const ButtonLabel = styled.Text<{ reject?: boolean }>`

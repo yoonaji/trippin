@@ -25,8 +25,11 @@ const DeleteButton = styled.TouchableOpacity`
     margin-left: auto;
     margin-right: 20px;
     padding: 6px 12px;
-    background-color: ${colors.gray1};
-    border-radius: 10px;
+    border-radius: 40px;
+    border-width: 1px;
+    background-color: ${colors.blue };
+    border-color: ${colors.cream};
+
 `;
 
 const Block = styled.View`
@@ -38,6 +41,12 @@ const Block = styled.View`
         margin: 18px 0 0 0;
         elevation: 4;
 `;
+
+const ButtonText = styled.Text`
+    color: ${colors.gray8};
+    font-size: 13px;
+`;
+
 
 type FriendRequest = {
     id: number;               // API에 맞게 number 타입
@@ -58,7 +67,7 @@ const FriendRequestItem = ({
         <ProfileImage />
         <UserName>{request.nickname}</UserName>
         <DeleteButton onPress={() => onDelete(request.email!)}>
-            <Text>친구삭제</Text>
+            <ButtonText>친구삭제</ButtonText>
         </DeleteButton>
     </ItemContainer>
 );
@@ -68,7 +77,7 @@ const FriendHomeScreen = () => {
     const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
     const [search, setSearch] = useState('');
 
-    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1OTE1ODA4OSwiZXhwIjoxNzU5MTU4OTg5fQ.EMLOJSmzDd7BQa5QoGqwBermGL6XoO5YGEGpssHyaqs';   // 실제 토큰으로 변경?
+    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E';   // 실제 토큰으로 변경?
     const userEmail = 'yoonn__a@gmail.com';      
     
     
@@ -103,29 +112,43 @@ useEffect(() => {
 
 
 // 친구 삭제 함수
-const onDeleteFriend = async (bEmail: string) => {
-  try { 
-    const response = await fetch(
-  `http://10.0.2.2:8080/api/friends?aEmail=${encodeURIComponent(userEmail)}&bEmail=${encodeURIComponent(bEmail)}`,
-  {
-    method: 'DELETE',
-    headers: {
-        'Authorization': `Bearer ${access_token}`,
-    },
+const onDeleteFriend = async (friendEmail: string) => {
+    try {
+        const response = await fetch(
+        `http://10.0.2.2:8080/api/friends/${encodeURIComponent(friendEmail)}`,
+    {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${access_token}`,
+        },
     }
-);
+    );
+
     if (!response.ok) {
         console.error('삭제 요청 실패:', response.status);
         return;
     }
-    const result = await response.text(); // 서버가 단순 메시지 반환하면 text()
+
+    // 서버가 단순 메시지 반환한다고 가정
+    const result = await response.text(); 
     if (result.includes('UNFRIENDED')) {
-        setFriendRequests(prev => prev.filter(f => f.email !== bEmail));
+        setFriendRequests(prev => prev.filter(f => f.email !== friendEmail));
     }
     } catch (error) {
     console.error('삭제 중 오류 발생: ', error);
     }
 };
+
+
+const filteredFriends = friendRequests.filter(friend => {
+        const searchText = search.toLowerCase();
+        if (!searchText) {
+            return true;
+        }
+        const nicknameMatch = friend.nickname.toLowerCase().includes(searchText);
+        const emailMatch = friend.email.toLowerCase().includes(searchText);
+            return nicknameMatch || emailMatch;
+    });
 
 
     return (
@@ -138,15 +161,15 @@ const onDeleteFriend = async (bEmail: string) => {
                 style={{ marginTop: 16, marginHorizontal: 10 }}
             />
 
-            <Block>
-                {friendRequests.map(request => (
+            {/* <Block> */}
+                {filteredFriends.map(request => (
                     <FriendRequestItem
                         key={request.id}
                         request={request}
                         onDelete={onDeleteFriend}
                     />
                 ))}
-            </Block>
+            {/* </Block> */}
         </Container>
     );
 };

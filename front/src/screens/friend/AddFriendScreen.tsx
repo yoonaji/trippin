@@ -43,22 +43,30 @@ const FriendRequestItem = ({
   <ItemContainer>
     <ProfileImage />
     <UserName>{request.nickname}</UserName>
-    <RejectButton onPress={() => onReject(request.requestId)}>
-      <ButtonLabel reject>거절</ButtonLabel>
-    </RejectButton>
     <AcceptButton onPress={() => onAccept(request.requestId)}>
       <ButtonLabel>수락</ButtonLabel>
     </AcceptButton>
+    <RejectButton onPress={() => onReject(request.requestId)}>
+      <ButtonLabel reject>거절</ButtonLabel>
+    </RejectButton>
+
   </ItemContainer>
 );
 //친구 요청 버튼 추가 필요
+
+
 
 const FriendHomeScreen = () => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [search, setSearch] = useState('');
 
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+const [isModalVisible, setIsModalVisible] = useState(false);
+
+
+  
   // 실제 토큰은 로그인 후 저장된 값 불러오기
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1ODUwMjcyOSwiZXhwIjoxNzU4NTAzNjI5fQ.jSBnY9z00nHMsp1tdc-aaoEB8GvlFunL-FVyWpEpe4U';
+  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E';
   const fromEmail = 'yoonn__a@gmail.com'; // 로그인 유저 이메일 (예시)
 
 // useEffect에서 데이터 정리
@@ -74,7 +82,17 @@ useEffect(() => {
       );
 
       if (!res.ok) throw new Error(`요청 실패: ${res.status}`);
-      const data = await res.json();
+      // const data = await res.json();
+
+        const json = await res.json();
+        const data = json.data ?? json; // ApiResponse 래핑 대응
+
+        if (!Array.isArray(data)) {
+          console.log('친구 요청 데이터 형식 오류:', data);
+          setFriendRequests([]);
+          return;
+        }
+
 
       const cleanedData: FriendRequest[] = data
         .filter((r: any) => r && r.id && r.nickname)
@@ -172,6 +190,41 @@ const sendFriendRequest = async () => {
   }
 };
 
+
+const handleSearchUser = async () => {
+  if (!search) {
+    setStatusMessage('이메일을 입력하세요.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/friends/search?email=${encodeURIComponent(search)}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`검색 실패: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (data && data.email) {
+      setSelectedUser(data); // 예: { nickname: "지윤아", email: "yoon@khu.ac.kr" }
+      setIsModalVisible(true);
+    } else {
+      setStatusMessage('해당 사용자를 찾을 수 없습니다.');
+    }
+  } catch (error: any) {
+    console.error('검색 에러:', error);
+    setStatusMessage(error.message || '검색 실패');
+  }
+};
+
+
+
   const Block = styled.View`
     flex: 1;
     width: 100%;
@@ -189,9 +242,23 @@ const sendFriendRequest = async () => {
         onChangeText={setSearch}
         placeholder="이메일로 친구 추가"
         onClear={() => setSearch('')}
+        onSearch={sendFriendRequest} 
         style={{ marginTop: 16, marginHorizontal: 10 }}
       />
-      <Block>
+
+      {statusMessage && (
+              <CustomText 
+                style={{ 
+                  textAlign: 'center', 
+                  marginVertical: 10, 
+                  color: colors.gray8 
+                }}
+              >
+                {statusMessage}
+              </CustomText>
+            )}
+
+      {/* <Block> */}
 {friendRequests.map(request => (
   <FriendRequestItem
     key={request.requestId}
@@ -200,7 +267,7 @@ const sendFriendRequest = async () => {
     onReject={handleReject}
   />
 ))}
-      </Block>
+      {/* </Block> */}
     </Container>
   );
 };

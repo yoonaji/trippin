@@ -16,6 +16,7 @@ import { Alert } from "react-native";
 // API URL
 const API_URL = "http://10.0.2.2:8080/api/users/me/username";
 const LOGOUT_URL = "http://10.0.2.2:8080/api/auth/logout";
+const PROFILE_IMAGE_URL = `http://10.0.2.2:8080/api/users/me/profile-image`;
 
 
 // 로그아웃
@@ -105,10 +106,12 @@ const MyPageScreen = () => {
   const [adsEnabled, setAdsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [newNickname, setNewNickname] = useState("");
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState("");
 
   // 토큰
   const accessToken =
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1NzQxNzc3NiwiZXhwIjoxNzU3NDE4Njc2fQ.XvNlwU5Ulc1sUjy5xEn-zDnN9qwHMDG0OPU6DGdnWxQ";
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E";
 
   const handleSubmitNickname = async () => {
     if (!newNickname.trim()) {
@@ -125,7 +128,26 @@ const MyPageScreen = () => {
       Alert.alert("오류", "닉네임 변경 실패");
     }
   };
+  const handleSubmitProfileImage = async () => {
+    if (!newImageUrl.trim()) {
+      Alert.alert("알림", "이미지 URL을 입력해주세요.");
+      return;
+    }
+    // 간단한 URL 유효성 검사 (http로 시작하는지)
+    if (!newImageUrl.startsWith("http://") && !newImageUrl.startsWith("https://")) {
+      Alert.alert("알림", "유효한 URL을 입력해주세요. (예: https://...)");
+      return;
+    }
 
+    try {
+      const res = await updateProfileImage(newImageUrl, accessToken);
+      Alert.alert("성공", res.message);
+      setProfileModalVisible(false);
+      setNewImageUrl("");
+    } catch (err) {
+      Alert.alert("오류", "프로필 사진 변경 실패");
+    }
+  };
   const handleLogout = async () => {
     try {
       const res = await logout(accessToken);
@@ -134,6 +156,29 @@ const MyPageScreen = () => {
       Alert.alert("오류", "로그아웃 실패");
     }
   };
+
+const updateProfileImage = async (profileImage: string, token: string) => {
+  try {
+    const response = await fetch(PROFILE_IMAGE_URL, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ profileImage }), // API가 URL을 받는다고 가정
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || `Error ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("프로필 사진 변경 실패:", error.message);
+    throw error; // 핸들러에서 잡을 수 있도록 re-throw
+  }
+};
 
 
   return (
@@ -157,7 +202,7 @@ const MyPageScreen = () => {
         <Block>
           <SectionItem label="닉네임 변경하기                                           " onPress={() => setModalVisible(true)} />
 
-          <SectionItem label="프로필 사진 변경하기" onPress={() => {}} />
+          <SectionItem label="프로필 사진 변경하기" onPress={() => setProfileModalVisible(true)} />
           <SectionItem label="비밀번호 변경하기" onPress={() => {}} />
           <SectionItem label="로그아웃" onPress={() => handleLogout()} />
         </Block>
@@ -210,6 +255,53 @@ const MyPageScreen = () => {
 
 
 
+<Modal visible={profileModalVisible} transparent animationType="slide">
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.5)",
+    }}
+  >
+    <View
+      style={{
+        backgroundColor: "white",
+        padding: 20,
+        borderRadius: 20,
+        width: "80%",
+      }}
+    >
+      <CustomText style={{ fontSize: 18, marginBottom: 15 }}>
+        프로필 사진 변경
+      </CustomText>
+
+      <TextInput
+        value={newImageUrl}
+        onChangeText={setNewImageUrl}
+        placeholder="새 프로필 이미지 URL 입력"
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 12,
+          marginBottom: 20,
+          borderRadius: 8,
+        }}
+        autoCapitalize="none"
+        keyboardType="url"
+      />
+
+      <ButtonRow>
+        <ModalButton bg={colors.blue} onPress={handleSubmitProfileImage}>
+          <ButtonText>확인</ButtonText>
+        </ModalButton>
+        <ModalButton bg={colors.gray2} onPress={() => setProfileModalVisible(false)}>
+          <ButtonText>취소</ButtonText>
+        </ModalButton>
+      </ButtonRow>
+    </View>
+  </View>
+</Modal>
 
 
 
