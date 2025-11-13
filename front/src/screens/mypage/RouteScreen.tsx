@@ -109,7 +109,7 @@ function CustomDropdown({
 }
 
 const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
-const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E';
+const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAyNDY3MywiZXhwIjoxNzYzMDI1NTczfQ.0QZl742rgv0jpitl2YL22OiXW4W4owTK2ZslTszV3yM';
 
 
 const RouteScreen = () => {

@@ -28,7 +28,7 @@ const MyPageScreen = () => {
       : 'http://localhost:8080';
 
   useEffect(() => {
-    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E";
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAyNDEyMywiZXhwIjoxNzYzMDI1MDIzfQ.lNRT9nRkGA-ioj_anooAXpBTqSYDnuM00JSAAdWWsbk";
 
     const fetchUserInfo = async () => {
       try {
@@ -92,11 +92,14 @@ const MyPageScreen = () => {
             {userInfo.profileImage ? (
               <Image
                 source={{ uri: userInfo.profileImage }}
-                style={{ width: 70, height: 70, borderRadius: 35 }}
+                style={{ width: 120, height: 120, borderRadius: 60 }}
               />
             ) : (
-              <DefaultProfile />
-
+              // <DefaultProfile />
+          <Image
+                source={require('../../assets/images/icon/heart.png')} // 예시: 로컬 기본 이미지 경로
+                style={{ width: 60, height: 60 }}
+              />
             )}
           </ProfileCircle>
           <CustomText weight="700" style={{ fontSize: 20, marginTop: 8 }}>
@@ -211,10 +214,10 @@ const ProfileCircle = styled.View`
   align-items: center;
 `;
 
-const DefaultProfile = styled.Image`
-  width: 60px;
-  height: 60px;
-`;
+// const DefaultProfile = styled.Image`
+//   width: 60px;
+//   height: 60px;
+// `;
 
 const CardRow = styled.View`
   flex-direction: row;

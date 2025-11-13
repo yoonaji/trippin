@@ -66,7 +66,7 @@ const [isModalVisible, setIsModalVisible] = useState(false);
 
   
   // 실제 토큰은 로그인 후 저장된 값 불러오기
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E';
+  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAyNDY3MywiZXhwIjoxNzYzMDI1NTczfQ.0QZl742rgv0jpitl2YL22OiXW4W4owTK2ZslTszV3yM';
   const fromEmail = 'yoonn__a@gmail.com'; // 로그인 유저 이메일 (예시)
 
 // useEffect에서 데이터 정리
