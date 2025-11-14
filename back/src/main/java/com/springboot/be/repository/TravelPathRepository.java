@@ -32,4 +32,6 @@ public interface TravelPathRepository extends JpaRepository<TravelPath, Long> {
     Optional<TravelPath> findByPost_Id(Long postId);
 
     boolean existsByPost_Id(Long postId);
+
+    List<TravelPath> findByUser_Id(Long userId);
 }

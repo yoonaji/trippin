@@ -5,24 +5,14 @@ import com.springboot.be.entity.Photo;
 
 import java.util.List;
 
-public record MarkerDetailDto(
-        Long id,
+public record FavoriteMarkerDto(
+        Long markerId,
         String placeName,
         double latitude,
         double longitude,
-        List<PhotoDto> photos
+        List<PhotoPreview> photos
 ) {
-    public static MarkerDetailDto from(Marker marker, List<Photo> photos) {
-        return new MarkerDetailDto(
-                marker.getId(),
-                marker.getGlobalPlace().getPlaceName(),
-                marker.getGlobalPlace().getLatitude(),
-                marker.getGlobalPlace().getLongitude(),
-                photos.stream().map(PhotoDto::from).toList()
-        );
-    }
-
-    public record PhotoDto(
+    public record PhotoPreview(
             Long photoId,
             String title,
             String content,
@@ -31,9 +21,9 @@ public record MarkerDetailDto(
             int commentCount,
             String createdAt
     ) {
-        public static PhotoDto from(Photo photo) {
+        public static PhotoPreview from(Photo photo) {
             var post = photo.getPost();
-            return new PhotoDto(
+            return new PhotoPreview(
                     photo.getId(),
                     post != null ? post.getTitle() : null,
                     photo.getContent(),
@@ -43,5 +33,15 @@ public record MarkerDetailDto(
                     photo.getCreatedAt() != null ? photo.getCreatedAt().toString() : null
             );
         }
+    }
+
+    public static FavoriteMarkerDto from(Marker marker, List<Photo> photos) {
+        return new FavoriteMarkerDto(
+                marker.getId(),
+                marker.getGlobalPlace().getPlaceName(),
+                marker.getGlobalPlace().getLatitude(),
+                marker.getGlobalPlace().getLongitude(),
+                photos.stream().map(PhotoPreview::from).toList()
+        );
     }
 }
