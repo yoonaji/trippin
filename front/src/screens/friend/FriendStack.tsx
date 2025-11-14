@@ -3,21 +3,26 @@ import React from 'react';
 import FriendHomeScreen from './FriendHomeScreen';
 import AddFriendScreen from './AddFriendScreen';
 import FriendListScreen from './FriendListScreen';
-import EachPostScreen from './EachPostScreen'; // 경로 맞게 수정 필요!
+import PostDetailScreen from '../shared/PostDetailScreen';
+import CustomText from '../../components/ui/CustomText';
+import { colors } from '../../styles/colors';
 
-export type PostType = {
-  userName: string;
-  location: string;
-  date: string;
-  text: string;
-  image: any;
+export type Post = {
+  postId: number;
+  title?: string | null;
+  thumbnailUrl?: string | null;
+  period?: string | null;
+  authorName?: string | null;
+  authorProfileImage?: string | null;
+  liked?: boolean;
+  likeCount?: number;
 };
 
 export type FriendStackParam = {
   FriendHomeScreen: undefined;
   AddFriendScreen: undefined;
   FriendListScreen: undefined;
-  EachPostScreen: { postId: number };  // 추가!
+  PostDetailScreen: { post: Post };
 };
 
 const Stack = createNativeStackNavigator<FriendStackParam>();
@@ -29,34 +34,64 @@ const FriendStack = () => {
         name="FriendHomeScreen"
         component={FriendHomeScreen}
         options={{
-          title: 'TRIPPIN',
+          headerTitle: () => (
+            <CustomText
+              weight="600"
+              style={{ fontSize: 18, color: colors.gray7 }}
+            >
+              TRIPPIN
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
+          headerShadowVisible: false,
         }}
       />
       <Stack.Screen
         name="AddFriendScreen"
         component={AddFriendScreen}
         options={{
-          title: 'Add Friend',
+          headerTitle: () => (
+            <CustomText
+              weight="600"
+              style={{ fontSize: 18, color: colors.gray7 }}
+            >
+              친구 추가
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
+          headerShadowVisible: false,
         }}
       />
       <Stack.Screen
         name="FriendListScreen"
         component={FriendListScreen}
         options={{
-          title: '친구 목록',
+          headerTitle: () => (
+            <CustomText
+              weight="600"
+              style={{ fontSize: 18, color: colors.gray7 }}
+            >
+              친구 목록
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
+          headerShadowVisible: false,
         }}
       />
-
-      {/* 새로 추가된 화면 */}
       <Stack.Screen
-        name="EachPostScreen"
-        component={EachPostScreen}
+        name="PostDetailScreen"
+        component={PostDetailScreen}
         options={{
-          title: '게시글',
+          headerTitle: () => (
+            <CustomText
+              weight="600"
+              style={{ fontSize: 18, color: colors.gray7 }}
+            >
+              게시글
+            </CustomText>
+          ),
           headerTitleAlign: 'center',
+          headerShadowVisible: false,
         }}
       />
     </Stack.Navigator>

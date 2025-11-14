@@ -1,29 +1,12 @@
-import React, { useMemo, useState, useEffect } from 'react'; 
+import React, { useEffect, useMemo, useState } from 'react';
+import styled from 'styled-components/native';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
-// import { useNavigation } from '@react-navigation/native'; 
-import {
-  Text,
-  View,
-  // Image, 
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Platform, //  Platform 추가
-  ActivityIndicator, //  ActivityIndicator 추가
-} from 'react-native';
-
-// import { Block, Header, UserInfo, ProfileImage, UserName, IconGroup, IconImage, ContentRow, LeftImage, InfoArea } from '../../styles/write.ts';
-// import heartIcon from '../../assets/images/icon/filledheart.png';
-import styled from 'styled-components/native';
-import { colors } from '../../styles/colors';
-// import chatIcon from '../../assets/images/icon/chat.png';
-import { HeaderRow } from './InfoEditScreen.tsx'; // IconCircle 제거 (미사용)
 import IconButton from '../../components/buttons/IconButton';
-import record from '../../assets/images/icon/record.png';
+import { colors } from '../../styles/colors';
+import place from '../../assets/images/icon/place.png';
+import api from '../../../axiosConfig';
+import { showError } from '../../utils/toast';
 
 type Marker = {
   id: number;
@@ -43,219 +26,186 @@ type Route = {
   markers: Marker[];
 };
 
-
-function CustomDropdown({
-  items,
-  value,
-  onChange,
-  placeholder = '',
-}: {
-  items: { label: string; value: number }[];
-  value: number | null | undefined;
-  onChange: (v: number | null) => void;
-  placeholder?: string;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const selectedLabel = useMemo(
-    () => items.find(i => i.value === value)?.label,
-    [items, value]
-  );
-
-  return (
-    <>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => setOpen(true)}
-        style={styles.dropdownBox}
-      >
-        <Text style={[styles.dropdownText, !selectedLabel && { color: colors.gray2 }]}>
-          {selectedLabel ?? placeholder}
-        </Text>
-        <Text style={styles.caret}>▼</Text>
-      </TouchableOpacity>
-
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
-      >
-        {/* 배경 클릭 시 닫힘 */}
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        {/* 옵션 시트 */}
-        <View style={styles.sheet}>
-          <FlatList
-            data={items}
-            keyExtractor={(item) => String(item.value)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.optionRow}
-                onPress={() => { onChange(item.value); setOpen(false); }}
-              >
-                <Text style={styles.optionText}>{item.label}</Text>
-              </TouchableOpacity>
-            )}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            ListFooterComponent={<View style={{ height: 6 }} />}
-          />
-          <TouchableOpacity style={styles.cancelBtn} onPress={() => setOpen(false)}>
-            <Text style={styles.cancelText}>취소</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-    </>
-  );
-}
-
-const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
-const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAyNDY3MywiZXhwIjoxNzYzMDI1NTczfQ.0QZl742rgv0jpitl2YL22OiXW4W4owTK2ZslTszV3yM';
-
-
 const RouteScreen = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
+  const [openDropdown, setOpenDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRoutes = async () => {
-      setLoading(true);
       try {
-        const res = await fetch(`${BASE_URL}/api/users/me/routes`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const json = await res.json();
-        if (res.ok && Array.isArray(json.data)) {
-          setRoutes(json.data);
-        } else {
-          console.error('API Error:', json?.message ?? res.status);
-        }
-      } catch (error) {
-        console.error('Fetch Error:', error);
+        const res = await api.get('/api/users/me/routes');
+        const list = res.data?.data ?? [];
+
+        if (!Array.isArray(list)) throw new Error('INVALID_RESPONSE');
+
+        setRoutes(list);
+      } catch (e: any) {
+        showError('여행 기록 조회 실패', e.response?.data?.message);
       } finally {
         setLoading(false);
       }
     };
+
     fetchRoutes();
   }, []);
 
-
   const dropdownItems = useMemo(
-    () => routes.map(route => ({
-      label: route.routeName || route.title, // routeName을 기본으로 사용
-      value: route.routeId,
-    })),
-    [routes]
+    () =>
+      routes.map(r => ({
+        label: r.routeName || r.title,
+        value: r.routeId,
+      })),
+    [routes],
   );
 
-return ( 
-<Container> 
-  <ScrollView showsVerticalScrollIndicator={false}> 
-    <HeaderRow> 
-      <CustomText style={{ fontSize: 16, fontWeight: "700" ,color:colors.blue}}> 
-        <FloatingButtonContainer> 
-          <FloatingButtonWrapper> 
-            <IconButton icon={record} size={15} /> 
-            </FloatingButtonWrapper> 
-            </FloatingButtonContainer> 
-            내 여행기록 
-            </CustomText> 
-            </HeaderRow>
+  const selectedRoute = dropdownItems.find(i => i.value === selectedRouteId);
 
-      {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 20 }} color={colors.blue} />
-      ) : (
-        <View style={{ marginHorizontal: 12, marginTop: 8 }}>
-          <CustomDropdown
-            items={dropdownItems}
-            value={selectedRouteId} //  상태 변수명 변경
-            onChange={setSelectedRouteId} //  상태 변수명 변경
-            placeholder="여행 경로를 선택하세요           " //  placeholder 수정
-          />
-        </View>
-      )}
-    </ScrollView>
-  </Container>
+  return (
+    <Container>
+      <Scroll>
+        <HeaderRow>
+          <HeaderTitle>
+            <FloatingContainer>
+              <FloatingButton>
+                <IconButton icon={place} size={16} />
+              </FloatingButton>
+            </FloatingContainer>
+            내 여행기록
+          </HeaderTitle>
+        </HeaderRow>
+
+        {loading ? (
+          <Loader />
+        ) : (
+          <DropWrapper>
+            <DropBox onPress={() => setOpenDropdown(true)}>
+              <DropText active={!!selectedRoute}>
+                {selectedRoute?.label || '여행 경로를 선택하세요'}
+              </DropText>
+              <Caret>▼</Caret>
+            </DropBox>
+          </DropWrapper>
+        )}
+
+        <ModalBox visible={openDropdown} transparent animationType="fade">
+          <ModalBackground onPress={() => setOpenDropdown(false)} />
+          <Sheet>
+            {dropdownItems.map(item => (
+              <OptionButton
+                key={item.value}
+                onPress={() => {
+                  setSelectedRouteId(item.value);
+                  setOpenDropdown(false);
+                }}
+              >
+                <OptionLabel>{item.label}</OptionLabel>
+              </OptionButton>
+            ))}
+
+            <CancelButton onPress={() => setOpenDropdown(false)}>
+              <CancelText>취소</CancelText>
+            </CancelButton>
+          </Sheet>
+        </ModalBox>
+      </Scroll>
+    </Container>
   );
 };
 
-const styles = StyleSheet.create({
-  dropdownBox: {
-    borderWidth: 1,
-    borderColor: colors.gray1,
-    borderRadius: 20,
-    backgroundColor: colors.sky,
-    paddingVertical: 10,
-    paddingHorizontal: 85,
-  },
-  dropdownText: {
-    fontSize: 14,
-    paddingRight: 1, // caret과 겹치지 않도록
-  },
-  caret: {
-    position: 'absolute',
-    right: 12,
-    top: 12,
-    fontSize: 14,
-    opacity: 0.6,
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  sheet: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    top: 120, // 드롭다운 바로 아래 정도로
-    borderRadius: 10,
-    backgroundColor: colors.gray1,
-    paddingVertical: 6,
-  },
-  optionRow: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-  },
-  optionText: {
-    fontSize: 14,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#eee',
-  },
-  cancelBtn: {
-    marginTop: 4,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: colors.gray2,
-  },
-});
+export default RouteScreen;
 
-  // 버튼 컨테이너
-const FloatingButtonContainer = styled.View`
-  position: absolute;
-  bottom: 8px;
-  right: 30px;
-  flex-direction: column;
-  align-items: center;
+const Scroll = styled.ScrollView``;
+
+const HeaderRow = styled.View`
+  margin: 20px 0 12px;
 `;
 
-const FloatingButtonWrapper = styled.View`
-  background-color:  ${colors.blue};
+const HeaderTitle = styled(CustomText)`
+  font-size: 16px;
+  font-weight: 700;
+  color: ${colors.blue};
+`;
+
+const FloatingContainer = styled.View`
+  position: absolute;
+  right: 28px;
+  bottom: 6px;
+`;
+
+const FloatingButton = styled.View`
+  background-color: ${colors.blue};
   width: 35px;
   height: 35px;
-  border-radius: 35px;
+  border-radius: 20px;
   justify-content: center;
   align-items: center;
-  margin-bottom: -10px; 
-  margin-right: 10px; 
-
 `;
 
+const Loader = styled.ActivityIndicator.attrs({
+  size: 'large',
+  color: colors.blue,
+})`
+  margin-top: 25px;
+`;
 
-export default RouteScreen;
+const DropWrapper = styled.View`
+  margin: 0 14px;
+`;
+
+const DropBox = styled.TouchableOpacity`
+  border-width: 1px;
+  border-radius: 20px;
+  border-color: ${colors.gray2};
+  background-color: ${colors.sky};
+  padding: 12px 18px;
+  justify-content: center;
+`;
+
+const DropText = styled(CustomText)<{ active: boolean }>`
+  font-size: 14px;
+  color: ${({ active }) => (active ? colors.gray7 : colors.gray4)};
+`;
+
+const Caret = styled.Text`
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  font-size: 13px;
+  color: ${colors.gray5};
+`;
+
+const ModalBox = styled.Modal``;
+
+const ModalBackground = styled.Pressable`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.25);
+`;
+
+const Sheet = styled.View`
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 130px;
+  background-color: ${colors.white};
+  border-radius: 14px;
+  padding: 8px 0;
+`;
+
+const OptionButton = styled.TouchableOpacity`
+  padding: 13px 18px;
+`;
+
+const OptionLabel = styled(CustomText)`
+  font-size: 14px;
+`;
+
+const CancelButton = styled.TouchableOpacity`
+  padding: 14px;
+  align-items: center;
+`;
+
+const CancelText = styled(CustomText)`
+  color: ${colors.gray5};
+`;

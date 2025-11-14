@@ -80,7 +80,7 @@ api.interceptors.response.use(
         processQueue(err, null);
         await AsyncStorage.removeItem('accessToken');
         await AsyncStorage.removeItem('refreshToken');
-        console.error('🔒 토큰 재발급 실패 → 로그아웃 필요');
+        console.error('토큰 재발급 실패 → 로그아웃 필요');
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

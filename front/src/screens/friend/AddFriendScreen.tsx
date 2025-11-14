@@ -1,239 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components/native';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
 import { colors } from '../../styles/colors';
 import SearchBar from './SearchBar.tsx';
-
-import {
-  AcceptButton,
-  RejectButton,
-  ButtonLabel,
-  ItemContainer,
-  UserName,
-} from '../../styles/friendlist.ts';
-
-const ProfileImage = styled.View`
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  background-color: gray;
-  margin-right: 12px;
-  margin-left: 22px;
-`;
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import FriendRequestItem from '../../components/ui/friend/FriendRequestItem.tsx';
+import Toast from 'react-native-toast-message';
+import { useLoading } from '../../components/ui/LoadingContext.tsx';
+import api from '../../../axiosConfig.ts';
+import styled from 'styled-components/native';
+import { showError, showSuccess } from '../../utils/toast.ts';
 
 type FriendRequest = {
-  requestId: number; // 서버에서 주는 친구 요청 고유 ID
+  requestId: number;
   fromEmail: string;
   nickname: string;
 };
 
-const API_BASE = "http://10.0.2.2:8080/api";//오류나면 이거 확인
-
-
-const FriendRequestItem = ({
-  request,
-  onAccept,
-  onReject,
-}: {
-  request: FriendRequest;
-  onAccept: (requestId: number) => void;
-  onReject: (requestId: number) => void;
-}) => (
-  <ItemContainer>
-    <ProfileImage />
-    <UserName>{request.nickname}</UserName>
-    <AcceptButton onPress={() => onAccept(request.requestId)}>
-      <ButtonLabel>수락</ButtonLabel>
-    </AcceptButton>
-    <RejectButton onPress={() => onReject(request.requestId)}>
-      <ButtonLabel reject>거절</ButtonLabel>
-    </RejectButton>
-
-  </ItemContainer>
-);
-//친구 요청 버튼 추가 필요
-
-
-
 const FriendHomeScreen = () => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [search, setSearch] = useState('');
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const { setLoadingPromise } = useLoading();
 
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
-const [isModalVisible, setIsModalVisible] = useState(false);
-
-
-  
-  // 실제 토큰은 로그인 후 저장된 값 불러오기
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAyNDY3MywiZXhwIjoxNzYzMDI1NTczfQ.0QZl742rgv0jpitl2YL22OiXW4W4owTK2ZslTszV3yM';
-  const fromEmail = 'yoonn__a@gmail.com'; // 로그인 유저 이메일 (예시)
-
-// useEffect에서 데이터 정리
-useEffect(() => {
-  const fetchRequests = async () => {
-    try {
-      const res = await fetch(
-        `${API_BASE}/friends/requests/incoming?email=${encodeURIComponent(fromEmail)}`,
-        {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!res.ok) throw new Error(`요청 실패: ${res.status}`);
-      // const data = await res.json();
-
-        const json = await res.json();
-        const data = json.data ?? json; // ApiResponse 래핑 대응
-
-        if (!Array.isArray(data)) {
-          console.log('친구 요청 데이터 형식 오류:', data);
-          setFriendRequests([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const email = await AsyncStorage.getItem('userEmail');
+        if (!email) {
+          showError('로그인 오류', '로그인 정보를 찾을 수 없습니다.');
           return;
         }
 
+        setUserEmail(email);
 
-      const cleanedData: FriendRequest[] = data
-        .filter((r: any) => r && r.id && r.nickname)
-        .map((r: any) => ({
-          requestId: Number(r.id), // 서버 친구 요청 ID
-          fromEmail: r.email,
-          nickname: r.nickname,
-        }));
+        const data = await setLoadingPromise(
+          api
+            .get('/api/friends/requests/incoming', {
+              params: { email },
+            })
+            .then(res => res.data.data ?? res.data),
+          '친구 요청 불러오는 중...',
+        );
 
-      setFriendRequests(cleanedData);
-    } catch (error) {
-      console.error('친구 요청 불러오기 에러:', error);
-      setFriendRequests([]);
+        if (Array.isArray(data)) {
+          setFriendRequests(
+            data.map((r: any) => ({
+              requestId: r.id,
+              fromEmail: r.email,
+              nickname: r.nickname,
+            })),
+          );
+        }
+      } catch (err: any) {
+        showError('불러오기 실패', err.response?.data?.message);
+      }
+    };
+
+    load();
+  }, []);
+
+  const handleAccept = async (id: number) => {
+    try {
+      await setLoadingPromise(
+        api.post(`/api/friends/requests/${id}/accept`),
+        '요청 수락 중...',
+      );
+
+      setFriendRequests(prev => prev.filter(r => r.requestId !== id));
+      showSuccess('완료', '친구 요청을 수락했습니다.');
+    } catch (err: any) {
+      showError('수락 실패', err.response?.data?.message);
     }
   };
 
-  fetchRequests();
-}, [fromEmail]);
+  const handleReject = async (id: number) => {
+    if (!userEmail) return showError('오류', '로그인 정보가 없습니다.');
 
-//수락
-const handleAccept = async (requestId: number) => {
-  try {
-    const res = await fetch(`${API_BASE}/friends/requests/${requestId}/accept`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      await setLoadingPromise(
+        api.post(
+          `/api/friends/requests/${id}/reject`,
+          {},
+          { params: { email: userEmail } },
+        ),
+        '요청 거절 중...',
+      );
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || `수락 실패: ${res.status}`);
+      setFriendRequests(prev => prev.filter(r => r.requestId !== id));
+      showSuccess('완료', '친구 요청을 거절했습니다.');
+    } catch (err: any) {
+      showError('거절 실패', err.response?.data?.message);
     }
+  };
+  const sendFriendRequest = async () => {
+    if (!userEmail) return showError('오류', '로그인 정보가 없습니다.');
+    if (!search.trim()) return showError('입력 오류', '이메일을 입력하세요.');
 
-    // 성공 시 요청 목록에서 제거
-    setFriendRequests(prev => prev.filter(r => r.requestId !== requestId));
-  } catch (error: any) {
-    console.error('친구 요청 수락 에러:', error.message);
-  }
-};
+    try {
+      const res = await setLoadingPromise(
+        api.post('/api/friends/requests', {
+          fromEmail: userEmail,
+          toEmail: search.trim(),
+        }),
+        '친구 요청 전송 중...',
+      );
 
-
-const handleReject = async (id: number) => {
-  try {
-    const res = await fetch(`${API_BASE}/friends/requests/${id}/reject`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || `거절 실패: ${res.status}`);
+      showSuccess('전송 완료', `요청 ID: ${res.data.id}`);
+      setSearch('');
+    } catch (err: any) {
+      showError('전송 실패', err.response?.data?.message);
     }
-
-    setFriendRequests(prev => prev.filter(r => r.requestId !== id));
-  } catch (error: any) {
-    console.error('친구 요청 거절 에러:', error.message);
-  }
-};
-
-  //친구 요청 보내기
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-
-const sendFriendRequest = async () => {
-  if (!search) {
-    setStatusMessage('이메일을 입력하세요.');
-    return;
-  }
-  try {
-    const res = await fetch(`${API_BASE}/friends/requests`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        fromEmail,
-        toEmail: search, // 여기서 이메일을 보내야 함
-      }),
-    });
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      throw new Error(result.message || `친구 요청 실패: ${res.status}`);
-    }
-
-    setStatusMessage(result.message || '친구 요청 성공');
-  } catch (error: any) {
-    setStatusMessage(error.message || '친구 요청 에러');
-  }
-};
-
-
-const handleSearchUser = async () => {
-  if (!search) {
-    setStatusMessage('이메일을 입력하세요.');
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/friends/search?email=${encodeURIComponent(search)}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`검색 실패: ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    if (data && data.email) {
-      setSelectedUser(data); // 예: { nickname: "지윤아", email: "yoon@khu.ac.kr" }
-      setIsModalVisible(true);
-    } else {
-      setStatusMessage('해당 사용자를 찾을 수 없습니다.');
-    }
-  } catch (error: any) {
-    console.error('검색 에러:', error);
-    setStatusMessage(error.message || '검색 실패');
-  }
-};
-
-
-
-  const Block = styled.View`
-    flex: 1;
-    width: 100%;
-    background-color: ${colors.white};
-    border-radius: 30px;
-    padding: 8px 0 30px 0;
-    margin: 18px 0 0 0;
-    elevation: 4;
-  `;
+  };
 
   return (
     <Container>
@@ -242,34 +120,30 @@ const handleSearchUser = async () => {
         onChangeText={setSearch}
         placeholder="이메일로 친구 추가"
         onClear={() => setSearch('')}
-        onSearch={sendFriendRequest} 
+        onSearch={sendFriendRequest}
         style={{ marginTop: 16, marginHorizontal: 10 }}
       />
 
-      {statusMessage && (
-              <CustomText 
-                style={{ 
-                  textAlign: 'center', 
-                  marginVertical: 10, 
-                  color: colors.gray8 
-                }}
-              >
-                {statusMessage}
-              </CustomText>
-            )}
-
-      {/* <Block> */}
-{friendRequests.map(request => (
-  <FriendRequestItem
-    key={request.requestId}
-    request={request}
-    onAccept={handleAccept}
-    onReject={handleReject}
-  />
-))}
-      {/* </Block> */}
+      {friendRequests.length === 0 ? (
+        <EmptyText>받은 친구 요청이 없습니다.</EmptyText>
+      ) : (
+        friendRequests.map(item => (
+          <FriendRequestItem
+            key={item.requestId}
+            nickname={item.nickname}
+            onAccept={() => handleAccept(item.requestId)}
+            onReject={() => handleReject(item.requestId)}
+          />
+        ))
+      )}
     </Container>
   );
 };
 
 export default FriendHomeScreen;
+
+const EmptyText = styled(CustomText)`
+  margin-top: 20px;
+  text-align: center;
+  color: ${colors.gray6};
+`;

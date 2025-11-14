@@ -45,13 +45,10 @@ const Onboarding = () => {
 
       await AsyncStorage.setItem('accessToken', data.accessToken);
       await AsyncStorage.setItem('refreshToken', data.refreshToken);
+      const userEmailToSave = data.email ?? email;
+      await AsyncStorage.setItem('userEmail', userEmailToSave);
 
-      Alert.alert('로그인 성공', `${data.username}님 환영합니다!`, [
-        {
-          text: '확인',
-          onPress: () => navigation.navigate('Main'),
-        },
-      ]);
+      navigation.navigate('Main');
     } catch (e: any) {
       console.log(e);
       const message =
@@ -124,7 +121,6 @@ const Onboarding = () => {
           <IconButton
             icon={kakao}
             size={60}
-            color={colors.kakao}
             onPress={() => navigation.navigate('Main')}
           />
         </SnsButton>
@@ -132,7 +128,6 @@ const Onboarding = () => {
           <IconButton
             icon={naver}
             size={55}
-            color={colors.naver}
             onPress={() => navigation.navigate('Main')}
           />
         </SnsButton>
@@ -140,7 +135,6 @@ const Onboarding = () => {
           <IconButton
             icon={google}
             size={50}
-            color={colors.white}
             onPress={() => navigation.navigate('Main')}
           />
         </SnsButton>

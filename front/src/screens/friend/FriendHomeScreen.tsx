@@ -1,33 +1,20 @@
-// FriendHomeScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { Text, View, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Image, ScrollView, ActivityIndicator } from 'react-native';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
 import IconButton from '../../components/buttons/IconButton';
 import plus from '../../assets/images/icon/plus.png';
-import listIcon from '../../assets/images/icon/listIcon.png';
+import listIcon from '../../assets/images/icon/friend_list.png';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FriendStackParam } from './FriendStack';
 import { useNavigation } from '@react-navigation/native';
-import {
-  Block,
-  Header,
-  UserInfo,
-  ProfileImage,
-  UserName,
-  IconGroup,
-  IconImage,
-  ContentRow,
-  LeftImage,
-  InfoArea,
-} from '../../styles/write.ts';
 import heartIcon from '../../assets/images/icon/heart.png';
 import chatIcon from '../../assets/images/icon/chat.png';
 import styled from 'styled-components/native';
 import { colors } from '../../styles/colors';
-import SearchBar from './SearchBar.tsx';
-import stadium from '../../assets/images/data/sample_stadium.png'; // placeholder
 import { TouchableOpacity } from 'react-native';
+import api from '../../../axiosConfig';
+import { showError } from '../../utils/toast';
 
 type Navigation = NativeStackNavigationProp<FriendStackParam>;
 
@@ -42,31 +29,8 @@ type Post = {
   likeCount?: number;
 };
 
-const API_BASE = 'http://10.0.2.2:8080';
-const token =
-  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiQGdtYWlsLmNvbSIsImNhdGVnb3J5IjoiYWNjZXNzIiwiaWF0IjoxNzYzMDA0MTUyLCJleHAiOjE3NjMwMDUwNTJ9.gmxD9gfhafhlJ2pFhgwSbnqGQk9B4mt6R67ZrvbOMB0';
-
-const FloatingButtonContainer = styled.View`
-  position: absolute;
-  bottom: 8px;
-  right: 30px;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const FloatingButtonWrapper = styled.View`
-  background-color: ${colors.blue};
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
 const FriendHomeScreen: React.FC = () => {
   const navigation = useNavigation<Navigation>();
-  const [email, setEmail] = useState('');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -74,24 +38,17 @@ const FriendHomeScreen: React.FC = () => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/api/friends/feed`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "application/json", // GET에서는 보통 불필요
-          },
-        });
+        const res = await api.get('/api/friends/feed');
+        const data = res.data?.data;
 
-        const json = await res.json();
-        console.log('friends/feed response:', res.status, json); // 디버깅용
-
-        if (res.ok && Array.isArray(json.data)) {
-          setPosts(json.data);
+        if (Array.isArray(data)) {
+          setPosts(data);
         } else {
-          console.error('API Error:', json?.message ?? res.status);
+          setPosts([]);
         }
-      } catch (error) {
-        console.error('Fetch Error:', error);
+      } catch (error: any) {
+        console.error('friends/feed error:', error);
+        showError('피드 조회 실패', error.response?.data?.message);
       } finally {
         setLoading(false);
       }
@@ -100,74 +57,50 @@ const FriendHomeScreen: React.FC = () => {
     fetchPosts();
   }, []);
 
-  //좋아요하기
   const handleLike = async (photoId: number) => {
     try {
-      const res = await fetch(`${API_BASE}/api/photos/${photoId}/like`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await api.post(`/api/photos/${photoId}/like`);
+      const payload = res.data?.data;
 
-      const json = await res.json();
-      console.log('like response:', res.status, json);
-
-    if (res.ok) {
-      if (json.data) {
-        const { photoId, likeCount, liked } = json.data;
+      if (payload) {
+        const { photoId: id, likeCount, liked } = payload;
         setPosts(prev =>
           prev.map(post =>
-            post.postId === photoId
-              ? { ...post, likeCount, liked }
-              : post,
+            post.postId === id ? { ...post, likeCount, liked } : post,
           ),
         );
       } else {
-        // data 없을 때 최소한 liked true/false만 토글해주기
         setPosts(prev =>
           prev.map(post =>
             post.postId === photoId
-              ? { ...post, liked: true, likeCount: (post.likeCount ?? 0) + 1 }
+              ? {
+                  ...post,
+                  liked: true,
+                  likeCount: (post.likeCount ?? 0) + 1,
+                }
               : post,
           ),
         );
       }
-    } else {
-      console.error('Like API Error:', json?.message ?? res.status);
-    }
-    } catch (error) {
-      console.error('Like Fetch Error:', error);
+    } catch (error: any) {
+      console.error('like error:', error);
+      showError('좋아요 실패', error.response?.data?.message);
     }
   };
 
-// 좋아요 취소
-const handleUnlike = async (photoId: number) => {
-  try {
-    const res = await fetch(`${API_BASE}/api/photos/${photoId}/like`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  const handleUnlike = async (photoId: number) => {
+    try {
+      const res = await api.delete(`/api/photos/${photoId}/like`);
+      const payload = res.data?.data;
 
-    const json = await res.json();
-    console.log('unlike response:', res.status, json);
-
-    if (res.ok) {
-      if (json.data) {
-        const { photoId, likeCount, liked } = json.data;
+      if (payload) {
+        const { photoId: id, likeCount, liked } = payload;
         setPosts(prev =>
           prev.map(post =>
-            post.postId === photoId
-              ? { ...post, likeCount, liked }
-              : post,
+            post.postId === id ? { ...post, likeCount, liked } : post,
           ),
         );
       } else {
-        // data가 null일 경우 대비: liked만 false로 바꾸고, likeCount 감소
         setPosts(prev =>
           prev.map(post =>
             post.postId === photoId
@@ -180,14 +113,11 @@ const handleUnlike = async (photoId: number) => {
           ),
         );
       }
-    } else {
-      console.error('Unlike API Error:', json?.message ?? res.status);
+    } catch (error: any) {
+      console.error('unlike error:', error);
+      showError('좋아요 취소 실패', error.response?.data?.message);
     }
-  } catch (error) {
-    console.error('Unlike Fetch Error:', error);
-  }
-};
-
+  };
 
   return (
     <Container>
@@ -207,74 +137,67 @@ const handleUnlike = async (photoId: number) => {
           {posts.map((post, idx) => (
             <TouchableOpacity
               key={post.postId ?? idx}
-              onPress={() => navigation.navigate('EachPostScreen', { postId: post.postId })}
+              onPress={() => navigation.navigate('PostDetailScreen', { post })}
               activeOpacity={0.8}
             >
+              <Block key={post.postId ?? idx}>
+                <Header>
+                  <UserInfo>
+                    {post.authorProfileImage ? (
+                      <ProfileImage source={{ uri: post.authorProfileImage }} />
+                    ) : (
+                      <ProfileImage
+                        source={require('../../assets/images/icon/author.png')}
+                      />
+                    )}
+                    <UserName>{post.authorName}</UserName>
+                  </UserInfo>
+                </Header>
 
-            <Block key={post.postId ?? idx}>
-              <Header>
-                <UserInfo>
-                  {post.authorProfileImage ? (
-                    <ProfileImage source={{ uri: post.authorProfileImage }} />
+                <ContentRow style={{ marginTop: 16 }}>
+                  {post.thumbnailUrl ? (
+                    <LeftImage source={{ uri: post.thumbnailUrl }} />
                   ) : (
-                    // authorProfileImage가 null이면 기본 이미지 사용
-                    <ProfileImage
-                      source={require('../../assets/images/data/sample_stadium.png')}
+                    <LeftImage
+                      source={require('../../assets/images/icon/author.png')}
                     />
                   )}
-                  <UserName>{post.authorName}</UserName>
-                  {/* 유저네임 여긴 잘됨 */}
-                </UserInfo>
-              </Header>
 
-              <ContentRow style={{ marginTop: 16 }}>
-                {post.thumbnailUrl ? (
-                  <LeftImage source={{ uri: post.thumbnailUrl }} />
-                ) : (
-                  <LeftImage
-                    source={require('../../assets/images/data/sample_stadium.png')}
-                  />
-                )}
+                  <InfoArea>
+                    <CustomText style={{ marginBottom: 6, fontSize: 15 }}>
+                      {post.title || '내용없음'}
+                    </CustomText>
+                  </InfoArea>
+                </ContentRow>
 
-                <InfoArea>
-                  <CustomText style={{ marginBottom: 6, fontSize: 15 }}>
-                    {post.title || '내용없음'}
-                  </CustomText>
-                </InfoArea>
-              </ContentRow>
+                <IconGroup style={{ marginTop: 6 }}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      post.liked
+                        ? handleUnlike(post.postId)
+                        : handleLike(post.postId)
+                    }
+                  >
+                    <IconImage
+                      source={heartIcon}
+                      style={{ tintColor: post.liked ? 'red' : 'gray' }}
+                    />
+                  </TouchableOpacity>
 
-              <IconGroup style={{ marginTop: 6 }}>
-                <TouchableOpacity
-                  onPress={() =>
-                    post.liked
-                      ? handleUnlike(post.postId)
-                      : handleLike(post.postId)
-                  }
-                >
-                <IconImage 
-                  source={heartIcon} 
-                  style={{ tintColor: post.liked ? 'red' : 'gray' }}
-/>
-                </TouchableOpacity>
-
-                <IconImage source={chatIcon} />
-              </IconGroup>
-            </Block>
-          </TouchableOpacity>
-
+                  <IconImage source={chatIcon} />
+                </IconGroup>
+              </Block>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
       <FloatingButtonContainer>
         <FloatingButtonWrapper>
-
-          <Image style={{tintColor:'white'}}/>
+          <Image style={{ tintColor: 'white' }} />
           <IconButton
             icon={listIcon}
             size={25}
-            
-            // color={colors.white}
             onPress={() => navigation.navigate('FriendListScreen')}
           />
         </FloatingButtonWrapper>
@@ -283,8 +206,6 @@ const handleUnlike = async (photoId: number) => {
           <IconButton
             icon={plus}
             size={20}
-            
-            // color={colors.white}
             onPress={() => navigation.navigate('AddFriendScreen')}
           />
         </FloatingButtonWrapper>
@@ -294,3 +215,92 @@ const handleUnlike = async (photoId: number) => {
 };
 
 export default FriendHomeScreen;
+
+const Block = styled.View`
+  width: 100%;
+  padding: 20px;
+  margin: 5px 0;
+  background-color: ${colors.sky};
+  border-radius: 24px;
+  elevation: 4;
+`;
+
+const Header = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+`;
+
+const UserInfo = styled.View`
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+`;
+
+const ProfileImage = styled.Image`
+  width: 30px;
+  height: 30px;
+  border-radius: 24px;
+`;
+
+const UserName = styled.Text`
+  margin-left: 12px;
+  font-weight: bold;
+  font-size: 14px;
+`;
+
+const IconGroup = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+`;
+
+const IconImage = styled.Image`
+  width: 25px;
+  height: 25px;
+`;
+
+const ItemContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom-width: 0.5px;
+  border-color: ${colors.gray2};
+`;
+
+const ContentRow = styled.View`
+  flex-direction: row;
+  align-items: flex-start;
+`;
+
+const LeftImage = styled.Image`
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  margin-right: 12px;
+`;
+
+const InfoArea = styled.View`
+  flex: 1;
+  justify-content: center;
+`;
+
+const FloatingButtonContainer = styled.View`
+  position: absolute;
+  bottom: 8px;
+  right: 30px;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const FloatingButtonWrapper = styled.View`
+  background-color: ${colors.blue};
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+`;
