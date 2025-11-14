@@ -59,7 +59,7 @@ const LikedScreen = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1NzQxNzc3NiwiZXhwIjoxNzU3NDE4Njc2fQ.XvNlwU5Ulc1sUjy5xEn-zDnN9qwHMDG0OPU6DGdnWxQ'; 
+    const access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5b29ubl9fYUBnbWFpbC5jb20iLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc2MzAwNjExNCwiZXhwIjoxNzYzMDA3MDE0fQ.KD0LllVFEjKor7iQkHxsI0ikcfqMNQ9BBlC1vHJQ63E'; 
 
     React.useEffect(() => {
         const fetchFavoritePosts = async () => {
@@ -130,7 +130,7 @@ const LikedScreen = () => {
                     <CustomText style={{ fontSize: 16, fontWeight: "700", color: colors.blue }}>
                         <FloatingButtonContainer>
                             <FloatingButtonWrapper>
-                                <IconButton icon={heart} size={25} />
+                                <IconButton icon={heart} size={14} />
                             </FloatingButtonWrapper>
                         </FloatingButtonContainer>
                         좋아요

@@ -66,11 +66,10 @@ export const LeftImage = styled.Image`
     width: 100px;
     height: 100px;
     border-radius: 8px;
-
+    margin-right: 12px;
 `;
 
 export const InfoArea = styled.View`
     flex: 1;
-    flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
 `;
