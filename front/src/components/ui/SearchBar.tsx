@@ -17,15 +17,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onChangeText,
   placeholder = '이메일로 친구 추가',
   onSearch,
+  style,
 }) => {
   return (
-    <SearchBarContainer style={{ marginBottom: 30 }}>
-      <SearchIcon source={searchIcon} />
+    <SearchBarContainer style={style}>
       <SearchInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.gray8}
+        placeholderTextColor={colors.gray5}
       />
       <TouchableOpacity onPress={onSearch}>
         <SearchIcon source={searchIcon} />
@@ -38,22 +38,21 @@ export default SearchBar;
 const SearchBarContainer = styled.View`
   flex-direction: row;
   align-items: center;
-  background-color: ${colors.white};
-  border-radius: 15px;
-  padding: 8px 12px;
-  elevation: 4;
+  padding: 12px 8px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${colors.gray7};
 `;
 
 const SearchIcon = styled.Image`
   width: 20px;
   height: 20px;
-  tint-color: ${colors.gray8};
+  tint-color: ${colors.gray7};
 `;
 
 const SearchInput = styled.TextInput`
   flex: 1;
   font-size: 15px;
-  color: ${colors.gray8};
-  padding: 0 8px;
+  color: ${colors.gray7};
+  padding: 0;
   background-color: transparent;
 `;

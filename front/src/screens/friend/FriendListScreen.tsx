@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components/native';
 import { Container } from '../../styles/GlobalStyles';
 import { colors } from '../../styles/colors';
-import SearchBar from './SearchBar.tsx';
 import api from '../../../axiosConfig.ts';
 import { showError, showSuccess } from '../../utils/toast.ts';
 import FriendListItem from '../../components/ui/friend/FriendListItem.tsx';
+import SearchBar from '../../components/ui/SearchBar.tsx';
 
 type Friend = {
   id: number;
@@ -69,7 +69,7 @@ const FriendListScreen = () => {
         onChangeText={setSearch}
         placeholder="이메일로 친구 검색"
         onClear={() => setSearch('')}
-        style={{ marginTop: 16, marginHorizontal: 10 }}
+        style={{ marginBottom: 28 }}
       />
 
       {filteredFriends.map(friend => (
@@ -85,42 +85,3 @@ const FriendListScreen = () => {
 };
 
 export default FriendListScreen;
-
-const ProfileImage = styled.View`
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  background-color: gray;
-  margin-right: 12px;
-  margin-left: 22px;
-`;
-
-const DeleteButton = styled.TouchableOpacity`
-  margin-left: auto;
-  margin-right: 20px;
-  padding: 6px 12px;
-  border-radius: 40px;
-  border-width: 1px;
-  background-color: ${colors.blue};
-  border-color: ${colors.cream};
-`;
-
-const ButtonText = styled.Text`
-  color: ${colors.gray8};
-  font-size: 13px;
-`;
-
-const ItemContainer = styled.View`
-  flex-direction: row;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom-width: 0.5px;
-  border-color: ${colors.gray2};
-`;
-
-const UserName = styled.Text`
-  flex: 1;
-  font-weight: bold;
-  font-size: 16px;
-  color: ${colors.gray8};
-`;

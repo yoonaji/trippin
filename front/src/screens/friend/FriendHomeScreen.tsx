@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
-import IconButton from '../../components/buttons/IconButton';
-import plus from '../../assets/images/icon/plus.png';
+import plusFriend from '../../assets/images/icon/plus_friend.png';
 import listIcon from '../../assets/images/icon/friend_list.png';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FriendStackParam } from './FriendStack';
 import { useNavigation } from '@react-navigation/native';
 import heartIcon from '../../assets/images/icon/heart.png';
 import chatIcon from '../../assets/images/icon/chat.png';
+import friend from '../../assets/images/icon/friend.png';
+import close from '../../assets/images/icon/x_icon.png';
 import styled from 'styled-components/native';
 import { colors } from '../../styles/colors';
 import { TouchableOpacity } from 'react-native';
@@ -33,6 +34,7 @@ const FriendHomeScreen: React.FC = () => {
   const navigation = useNavigation<Navigation>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -192,24 +194,30 @@ const FriendHomeScreen: React.FC = () => {
         </ScrollView>
       )}
 
-      <FloatingButtonContainer>
-        <FloatingButtonWrapper>
-          <Image style={{ tintColor: 'white' }} />
-          <IconButton
-            icon={listIcon}
-            size={25}
-            onPress={() => navigation.navigate('FriendListScreen')}
-          />
-        </FloatingButtonWrapper>
+      <FloatingWrapper>
+        {open && (
+          <>
+            <MiniButton
+              style={{ bottom: 140 }}
+              onPress={() => navigation.navigate('FriendListScreen')}
+            >
+              <MiniIconImage source={listIcon} />
+            </MiniButton>
 
-        <FloatingButtonWrapper>
-          <IconButton
-            icon={plus}
-            size={20}
-            onPress={() => navigation.navigate('AddFriendScreen')}
-          />
-        </FloatingButtonWrapper>
-      </FloatingButtonContainer>
+            <MiniButton
+              style={{ bottom: 70 }}
+              onPress={() => navigation.navigate('AddFriendScreen')}
+            >
+              <MiniIconImage source={plusFriend} />
+            </MiniButton>
+          </>
+        )}
+        <MainButton open={open} onPress={() => setOpen(!open)}>
+          <MainButtonIcon>
+            <MainIconImage source={open ? close : friend} />
+          </MainButtonIcon>
+        </MainButton>
+      </FloatingWrapper>
     </Container>
   );
 };
@@ -262,14 +270,6 @@ const IconImage = styled.Image`
   height: 25px;
 `;
 
-const ItemContainer = styled.View`
-  flex-direction: row;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom-width: 0.5px;
-  border-color: ${colors.gray2};
-`;
-
 const ContentRow = styled.View`
   flex-direction: row;
   align-items: flex-start;
@@ -287,20 +287,50 @@ const InfoArea = styled.View`
   justify-content: center;
 `;
 
-const FloatingButtonContainer = styled.View`
+const FloatingWrapper = styled.View`
   position: absolute;
-  bottom: 8px;
-  right: 30px;
-  flex-direction: column;
+  bottom: 25px;
+  right: 25px;
   align-items: center;
 `;
 
-const FloatingButtonWrapper = styled.View`
-  background-color: ${colors.blue};
+const MainButton = styled.TouchableOpacity<{ open: boolean }>`
   width: 60px;
   height: 60px;
-  border-radius: 30px;
+  border-radius: 60px;
+  background-color: ${({ open }) => (open ? colors.blue2 : colors.blue)};
   justify-content: center;
   align-items: center;
-  margin-bottom: 8px;
+  elevation: 6;
+`;
+
+const MainButtonIcon = styled.View`
+  justify-content: center;
+  align-items: center;
+`;
+
+const MiniButton = styled.TouchableOpacity`
+  position: absolute;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  background-color: ${colors.blue};
+  justify-content: center;
+  align-items: center;
+  elevation: 5;
+`;
+
+const MiniIconImage = styled.Image.attrs({
+  resizeMode: 'contain',
+})`
+  width: 25px;
+  height: 25px;
+`;
+
+const MainIconImage = styled.Image.attrs({
+  resizeMode: 'contain',
+})`
+  width: 27px;
+  height: 27px;
 `;

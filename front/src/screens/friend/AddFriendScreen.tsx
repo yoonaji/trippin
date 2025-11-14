@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
 import { colors } from '../../styles/colors';
-import SearchBar from './SearchBar.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FriendRequestItem from '../../components/ui/friend/FriendRequestItem.tsx';
-import Toast from 'react-native-toast-message';
 import { useLoading } from '../../components/ui/LoadingContext.tsx';
 import api from '../../../axiosConfig.ts';
 import styled from 'styled-components/native';
 import { showError, showSuccess } from '../../utils/toast.ts';
+import SearchBar from '../../components/ui/SearchBar.tsx';
+import FriendSearchModal from '../../components/ui/friend/FriendSearchModal.tsx';
 
 type FriendRequest = {
   requestId: number;
@@ -22,6 +22,8 @@ const FriendHomeScreen = () => {
   const [search, setSearch] = useState('');
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const { setLoadingPromise } = useLoading();
+  const [searchResult, setSearchResult] = useState<any | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -60,6 +62,37 @@ const FriendHomeScreen = () => {
     load();
   }, []);
 
+  const searchFriend = async () => {
+    if (!search.trim()) return showError('입력 오류', '이메일을 입력하세요.');
+
+    try {
+      const res = await setLoadingPromise(
+        api.get('/api/friends/search', {
+          params: { email: search.trim() },
+        }),
+        '친구 검색 중...',
+      );
+
+      setSearchResult(res.data);
+      setModalVisible(true);
+    } catch (err: any) {
+      const status = err.response?.status;
+      const data = err.response?.data;
+
+      let message = '검색에 실패했습니다.';
+
+      if (status === 404 && typeof data === 'string') {
+        message = data;
+      }
+
+      if (typeof data === 'object' && data.message) {
+        message = data.message;
+      }
+
+      showError('검색 실패', message);
+    }
+  };
+
   const handleAccept = async (id: number) => {
     try {
       await setLoadingPromise(
@@ -93,6 +126,7 @@ const FriendHomeScreen = () => {
       showError('거절 실패', err.response?.data?.message);
     }
   };
+
   const sendFriendRequest = async () => {
     if (!userEmail) return showError('오류', '로그인 정보가 없습니다.');
     if (!search.trim()) return showError('입력 오류', '이메일을 입력하세요.');
@@ -106,7 +140,8 @@ const FriendHomeScreen = () => {
         '친구 요청 전송 중...',
       );
 
-      showSuccess('전송 완료', `요청 ID: ${res.data.id}`);
+      showSuccess('전송 완료', `친구 요청이 전송되었습니다.`);
+      setModalVisible(false);
       setSearch('');
     } catch (err: any) {
       showError('전송 실패', err.response?.data?.message);
@@ -120,8 +155,8 @@ const FriendHomeScreen = () => {
         onChangeText={setSearch}
         placeholder="이메일로 친구 추가"
         onClear={() => setSearch('')}
-        onSearch={sendFriendRequest}
-        style={{ marginTop: 16, marginHorizontal: 10 }}
+        onSearch={searchFriend}
+        style={{ marginBottom: 28 }}
       />
 
       {friendRequests.length === 0 ? (
@@ -136,6 +171,13 @@ const FriendHomeScreen = () => {
           />
         ))
       )}
+
+      <FriendSearchModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        user={searchResult}
+        onSendRequest={sendFriendRequest}
+      />
     </Container>
   );
 };
