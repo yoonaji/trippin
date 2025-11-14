@@ -1,83 +1,99 @@
-name: Deployment
+name: Deploy Spring Boot to Cloud Run
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - backend/feature/test
+    # main 브랜치에 푸시될 때 실행
 
+# GCP 인증을 위한 권한
 permissions:
   id-token: write
   contents: read
 
-jobs:
-  deploy-backend:
-    runs-on: ubuntu-latest
-    env:
-      AWS_REGION: ap-northeast-2
-      EKS_CLUSTER_NAME: trippin-cluster
-      ECR_REPOSITORY: trippin-backend
-      NS: default
-      DEPLOY: trippin-backend
+# ⭐️ 공통 환경 변수 (본인 환경에 맞게 수정)
+env:
+  GCP_PROJECT_ID: concrete-acre-477518-s2 # ⭐️ 본인 GCP 프로젝트 ID
+  GCP_REGION: us-central1           # ⭐️ Cloud Run 리전 (서울)
+  GAR_REPOSITORY: trippin-repo             # ⭐️ Artifact Registry 저장소 이름
+  SERVICE_NAME: trippin-backend           # ⭐️ Cloud Run에 배포될 서비스 이름
 
+jobs:
+  deploy-to-cloud-run:
+    runs-on: ubuntu-latest
     steps:
+      # 1. 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      # 2. 'gcloud' CLI 인증 (GitHub Actions가 GCP에 접근하기 위함)
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          # ⭐️ GitHub Secret에 저장한 'GCP_SA_KEY_BASE64' 사용
+          credentials_json: ${{ secrets.GCP_SA_KEY_BASE64 }}
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+      # 3. Artifact Registry에 Docker 인증
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
-      - name: Ensure ECR repo
-        run: |
-          aws ecr describe-repositories --repository-names "${{ env.ECR_REPOSITORY }}" >/dev/null 2>&1 \
-          || aws ecr create-repository --repository-name "${{ env.ECR_REPOSITORY }}" >/dev/null
-
-      - name: Build & Push Docker image
+      # 4. Docker 이미지 빌드 및 Artifact Registry로 푸시
+      - name: Build and Push Docker Image
+        id: build-image
         env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }} # 커밋 해시로 태그 생성
+          GAR_REGISTRY: ${{ env.GCP_REGION }}-docker.pkg.dev
         run: |
-          cd back
-          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          cd back # ⭐️ Dockerfile이 back/ 폴더에 있으므로 이동
+          
+          # 전체 이미지 경로 정의
+          FULL_IMAGE_NAME="$GAR_REGISTRY/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE_NAME }}:$IMAGE_TAG"
+          
+          docker build -t $FULL_IMAGE_NAME .
+          docker push $FULL_IMAGE_NAME
+          
+          # 다음 단계에서 사용할 수 있도록 이미지 이름 저장
+          echo "image_name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
 
-      - name: Kubeconfig
-        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+      # 5. 🚀 Cloud Run에 배포 (⭐️ 가장 중요)
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          image: ${{ steps.build-image.outputs.image_name }} # 4단계에서 푸시한 이미지
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.GCP_REGION }}
 
-      - name: Bootstrap secrets & first resources
-        env:
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          kubectl -n "$NS" create secret generic trippin-db \
-            --from-literal=username="$DB_USERNAME" \
-            --from-literal=password="$DB_PASSWORD" \
-            --from-literal=url="${{ secrets.SPRING_DATASOURCE_URL }}" \
-            --dry-run=client -o yaml | kubectl apply -f -
 
-          if ! kubectl -n "$NS" get deploy "$DEPLOY" >/dev/null 2>&1; then
-            IMG="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
-            sed -e "s#IMAGE_PLACEHOLDER#${IMG}#g" aws/k8s/deployment.yaml | kubectl -n "$NS" apply -f -
-            kubectl -n "$NS" apply -f aws/k8s/service.yaml
-          else
-            kubectl -n "$NS" apply -f aws/k8s/service.yaml
-          fi
 
-      # - name: Apply ingress
-      #   if: ${{ hashFiles('aws/ingress.yaml') != '' }}
-      #   run: kubectl -n "$NS" apply -f aws/ingress.yaml
+          # ⭐️ GitHub Secrets에 저장된 환경 변수들을 Cloud Run에 주입
+          # (주의: 여기에 GOOGLE_APPLICATION_CREDENTIALS는 절대 넣지 마세요!)
+          env_vars: |
+            SPRING_DATASOURCE_URL=jdbc:postgresql:///${DB_NAME}?cloudSqlInstance=${INSTANCE_CONNECTION_NAME}            
+            SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+            INSTANCE_CONNECTION_NAME=${{ secrets.INSTANCE_CONNECTION_NAME }}
+            GCS_BUCKET=${{ secrets.GCS_BUCKET }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+            NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+            KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            APP_S3_REGION=${{ secrets.APP_S3_REGION }}
+            APP_S3_BUCKET=${{ secrets.APP_S3_BUCKET }}
+            APP_CDN_DOMAIN=${{ secrets.APP_CDN_DOMAIN }}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+            GCS_BUCKET=${{ secrets.GCS_BUCKET }}
+            GCS_DOMAIN=${{ secrets.GCS_DOMAIN }}
+            CLOUD_SQL=${{ secrets.CLOUD_SQL }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            APP_S3_ENABLED: false
+            APP_S3_REGION: "disabled"
+            APP_S3_BUCKET: "disabled"
 
-      - name: Deploy to EKS
-        env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          set -e
-          CONTAINER=$(kubectl -n "$NS" get deploy "$DEPLOY" -o jsonpath='{.spec.template.spec.containers[0].name}')
-          echo "Container: $CONTAINER"
-          kubectl -n "$NS" set image deployment/$DEPLOY $CONTAINER=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
-          kubectl -n "$NS" rollout status deployment/$DEPLOY --timeout=5m
+          flags: |
+            --add-cloudsql-instances=${{ secrets.INSTANCE_CONNECTION_NAME }}

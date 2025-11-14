@@ -136,3 +136,13 @@ app:
     bucket: ${APP_S3_BUCKET}
   cdn:
     domain: ${APP_CDN_DOMAIN}
+
+  gcs:
+    enabled: true
+    project-id: ${GCP_PROJECT_ID}
+    bucket: ${GCS_BUCKET}
+    domain: ${GCS_DOMAIN}
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}

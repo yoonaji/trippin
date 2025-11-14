@@ -1,80 +1,64 @@
-.env
+# Java / Gradle
+/build/
+/out/
+.gradle/
 
-.idea
-=======
-# OSX
-#
+# Terraform / Helm
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.tar.gz
+*.hcl
+
+# Environment
+.env
+gcp-key.json
+
+# IDE
+.idea/
+*.iml
+
+# OS
+Thumbs.db
 .DS_Store
 
-# Xcode
-#
+# Logs & temp
+*.log
+tmp/
+*.swp
+
+# Gradle build output
 build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-**/.xcode.env.local
+.gradle/
+out/
+!gradle/wrapper/gradle-wrapper.jar  # 이건 유지해야 함
 
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
-local.properties
-*.iml
-*.hprof
-.cxx/
-*.keystore
-!debug.keystore
-.kotlin/
+# Terraform local cache & state
+.terraform.lock.hcl
+crash.log
+terraform.tfvars
+*.tfplan
 
-# node.js
-#
-node_modules/
-npm-debug.log
-yarn-error.log
+# Java
+*.class
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
+# Docker
+*.pid
 
-**/fastlane/report.xml
-**/fastlane/Preview.html
-**/fastlane/screenshots
-**/fastlane/test_output
+# IntelliJ / VSCode (추가 보호)
+.vscode/
+*.ipr
+*.iws
 
-# Bundle artifact
-*.jsbundle
+# OS & Temp
+*.tmp
+*.bak
+*.old
 
-# Ruby / CocoaPods
-**/Pods/
-/vendor/bundle/
-
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
-
-# testing
-/coverage
-
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
+# Dependency Archives (특히 대용량)
+*.zip
+*.tar
+*.tar.gz
+*.jar
+*.war
+*.ear

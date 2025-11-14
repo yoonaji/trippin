@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: "postgres:latest"
+    image: "postgres:16"
     environment:
       - "POSTGRES_DB=${POSTGRES_DB}"
       - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
@@ -23,9 +23,11 @@ services:
       - redis
     ports:
       - "${SPRINGBOOT_PORT}:${SPRINGBOOT_PORT}"
-
+    volumes:
+      - "C:/trippin/gcp-key.json:/app/gcp-key.json"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-key.json
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
@@ -38,10 +40,15 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       APP_S3_REGION: ${APP_S3_REGION}
       APP_S3_BUCKET: ${APP_S3_BUCKET}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCS_BUCKET: ${GCS_BUCKET}
+      GCS_DOMAIN: ${GCS_DOMAIN}
       APP_CDN_DOMAIN: ${APP_CDN_DOMAIN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 
     env_file:
       - .env
 
+#volume
 volumes:
   postgres_data:
