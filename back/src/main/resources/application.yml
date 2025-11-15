@@ -29,7 +29,7 @@ spring:
 
   data:
     redis:
-      host: redis   # <-- compose 서비스 이름
+      host: localhost   # <-- compose 서비스 이름
       port: 6379
       repositories:
         enabled: false
