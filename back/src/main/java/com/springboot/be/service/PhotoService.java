@@ -9,6 +9,7 @@ import com.springboot.be.dto.request.ImageUploadRequest;
 import com.springboot.be.dto.response.CommentDto;
 import com.springboot.be.dto.response.PhotoDetailDto;
 import com.springboot.be.dto.response.PhotoUploadResponse;
+import com.springboot.be.dto.response.PopularPhotoDto;
 import com.springboot.be.entity.Photo;
 import com.springboot.be.entity.PhotoLike;
 import com.springboot.be.entity.User;
@@ -224,5 +225,13 @@ public class PhotoService {
 
         name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
         return "images/" + UUID.randomUUID().toString() + "-" + name + ext;
+    }
+
+    @Transactional(readOnly = true)
+    public List<PopularPhotoDto> getPopularPhotos() {
+        return photoRepository.findTopPopularPhotos().stream()
+                .limit(5)
+                .map(PopularPhotoDto::from)
+                .toList();
     }
 }
