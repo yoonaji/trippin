@@ -27,7 +27,11 @@ const TabNavigator = () => {
       screenOptions={({ route }): BottomTabNavigationOptions => {
         const routeName = getFocusedRouteNameFromRoute(route) ?? '';
 
-        const hideTabBarRoutes = ['PostCreateScreen', 'PostConfirmScreen'];
+        const hideTabBarRoutes = [
+          'PostCreateScreen',
+          'PostConfirmScreen',
+          'PostDetailScreen',
+        ];
         const shouldHideTabBar = hideTabBarRoutes.includes(routeName);
 
         return {

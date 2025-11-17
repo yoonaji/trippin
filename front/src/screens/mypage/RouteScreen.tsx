@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components/native';
 import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
-import IconButton from '../../components/buttons/IconButton';
 import { colors } from '../../styles/colors';
 import place from '../../assets/images/icon/place.png';
 import api from '../../../axiosConfig';
 import { showError } from '../../utils/toast';
+import { TouchableWithoutFeedback } from 'react-native';
+import down from '../../assets/images/icon/down.png';
 
 type Marker = {
   id: number;
@@ -63,54 +64,55 @@ const RouteScreen = () => {
   const selectedRoute = dropdownItems.find(i => i.value === selectedRouteId);
 
   return (
-    <Container>
-      <Scroll>
-        <HeaderRow>
-          <HeaderTitle>
-            <FloatingContainer>
-              <FloatingButton>
-                <IconButton icon={place} size={16} />
-              </FloatingButton>
-            </FloatingContainer>
-            내 여행기록
-          </HeaderTitle>
-        </HeaderRow>
+    <TouchableWithoutFeedback onPress={() => setOpenDropdown(false)}>
+      <Container>
+        <Scroll
+          style={{ width: '100%' }}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <HeaderRow>
+            <IconCircle>
+              <RouteIcon source={place} />
+            </IconCircle>
+          </HeaderRow>
+          <Line />
 
-        {loading ? (
-          <Loader />
-        ) : (
-          <DropWrapper>
-            <DropBox onPress={() => setOpenDropdown(true)}>
-              <DropText active={!!selectedRoute}>
-                {selectedRoute?.label || '여행 경로를 선택하세요'}
-              </DropText>
-              <Caret>▼</Caret>
-            </DropBox>
-          </DropWrapper>
-        )}
-
-        <ModalBox visible={openDropdown} transparent animationType="fade">
-          <ModalBackground onPress={() => setOpenDropdown(false)} />
-          <Sheet>
-            {dropdownItems.map(item => (
-              <OptionButton
-                key={item.value}
-                onPress={() => {
-                  setSelectedRouteId(item.value);
-                  setOpenDropdown(false);
-                }}
+          {loading ? (
+            <Loader />
+          ) : (
+            <DropWrapper>
+              <DropBox
+                onPress={() => setOpenDropdown(prev => !prev)}
+                active={openDropdown}
               >
-                <OptionLabel>{item.label}</OptionLabel>
-              </OptionButton>
-            ))}
+                <DropText active={!!selectedRoute}>
+                  {selectedRoute?.label || '여행 경로를 선택하세요'}
+                </DropText>
+                <DownIcon source={down} />
+              </DropBox>
 
-            <CancelButton onPress={() => setOpenDropdown(false)}>
-              <CancelText>취소</CancelText>
-            </CancelButton>
-          </Sheet>
-        </ModalBox>
-      </Scroll>
-    </Container>
+              {openDropdown && (
+                <Dropdown>
+                  <ScrollBox>
+                    {dropdownItems.map(item => (
+                      <OptionButton
+                        key={item.value}
+                        onPress={() => {
+                          setSelectedRouteId(item.value);
+                          setOpenDropdown(false);
+                        }}
+                      >
+                        <OptionLabel>{item.label}</OptionLabel>
+                      </OptionButton>
+                    ))}
+                  </ScrollBox>
+                </Dropdown>
+              )}
+            </DropWrapper>
+          )}
+        </Scroll>
+      </Container>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -119,28 +121,31 @@ export default RouteScreen;
 const Scroll = styled.ScrollView``;
 
 const HeaderRow = styled.View`
-  margin: 20px 0 12px;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-top: 20px;
 `;
 
-const HeaderTitle = styled(CustomText)`
-  font-size: 16px;
-  font-weight: 700;
-  color: ${colors.blue};
-`;
-
-const FloatingContainer = styled.View`
-  position: absolute;
-  right: 28px;
-  bottom: 6px;
-`;
-
-const FloatingButton = styled.View`
+const IconCircle = styled.View`
+  width: 40px;
+  height: 40px;
   background-color: ${colors.blue};
-  width: 35px;
-  height: 35px;
-  border-radius: 20px;
+  border-radius: 40px;
   justify-content: center;
   align-items: center;
+`;
+
+const RouteIcon = styled.Image`
+  width: 25px;
+  height: 25px;
+  tint-color: ${colors.white};
+`;
+
+const Line = styled.View`
+  width: 100%;
+  height: 1px;
+  background-color: ${colors.gray3};
+  margin-vertical: 8px;
 `;
 
 const Loader = styled.ActivityIndicator.attrs({
@@ -151,16 +156,23 @@ const Loader = styled.ActivityIndicator.attrs({
 `;
 
 const DropWrapper = styled.View`
-  margin: 0 14px;
+  position: relative;
 `;
 
-const DropBox = styled.TouchableOpacity`
+const DropBox = styled.TouchableOpacity<{ active: boolean }>`
   border-width: 1px;
   border-radius: 20px;
   border-color: ${colors.gray2};
   background-color: ${colors.sky};
   padding: 12px 18px;
-  justify-content: center;
+  justify-content: space-between;
+  ${({ active }) =>
+    active &&
+    `
+    border-color: ${colors.blue2};
+  `}
+  flex-direction: row;
+  align-items: center;
 `;
 
 const DropText = styled(CustomText)<{ active: boolean }>`
@@ -168,29 +180,31 @@ const DropText = styled(CustomText)<{ active: boolean }>`
   color: ${({ active }) => (active ? colors.gray7 : colors.gray4)};
 `;
 
-const Caret = styled.Text`
-  position: absolute;
-  right: 16px;
-  top: 14px;
-  font-size: 13px;
-  color: ${colors.gray5};
+const DownIcon = styled.Image`
+  width: 15px;
+  height: 13px;
+  tint-color: ${colors.gray6};
 `;
 
-const ModalBox = styled.Modal``;
-
-const ModalBackground = styled.Pressable`
-  flex: 1;
-  background-color: rgba(0, 0, 0, 0.25);
-`;
-
-const Sheet = styled.View`
+const Dropdown = styled.View`
   position: absolute;
-  left: 14px;
-  right: 14px;
-  top: 130px;
+  top: 50px;
+  width: 100%;
   background-color: ${colors.white};
-  border-radius: 14px;
-  padding: 8px 0;
+  border-radius: 10px;
+  border-width: 1px;
+  border-color: ${colors.gray2};
+  z-index: 100;
+  max-height: 200px;
+  overflow: hidden;
+  elevation: 4;
+  shadow-color: #000;
+  shadow-opacity: 0.12;
+  shadow-radius: 6px;
+`;
+
+const ScrollBox = styled.ScrollView`
+  max-height: 180px;
 `;
 
 const OptionButton = styled.TouchableOpacity`
@@ -199,13 +213,4 @@ const OptionButton = styled.TouchableOpacity`
 
 const OptionLabel = styled(CustomText)`
   font-size: 14px;
-`;
-
-const CancelButton = styled.TouchableOpacity`
-  padding: 14px;
-  align-items: center;
-`;
-
-const CancelText = styled(CustomText)`
-  color: ${colors.gray5};
 `;

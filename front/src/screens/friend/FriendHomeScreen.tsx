@@ -119,69 +119,6 @@ const FriendHomeScreen: React.FC = () => {
 
 export default FriendHomeScreen;
 
-const Block = styled.View`
-  width: 100%;
-  padding: 20px;
-  margin: 5px 0;
-  background-color: ${colors.sky};
-  border-radius: 24px;
-  elevation: 4;
-`;
-
-const Header = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 5px;
-`;
-
-const UserInfo = styled.View`
-  flex-direction: row;
-  align-items: center;
-  flex: 1;
-`;
-
-const ProfileImage = styled.Image`
-  width: 30px;
-  height: 30px;
-  border-radius: 24px;
-`;
-
-const UserName = styled.Text`
-  margin-left: 12px;
-  font-weight: bold;
-  font-size: 14px;
-`;
-
-const IconGroup = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 20px;
-`;
-
-const IconImage = styled.Image`
-  width: 25px;
-  height: 25px;
-`;
-
-const ContentRow = styled.View`
-  flex-direction: row;
-  align-items: flex-start;
-`;
-
-const LeftImage = styled.Image`
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
-  margin-right: 12px;
-`;
-
-const InfoArea = styled.View`
-  flex: 1;
-  justify-content: center;
-`;
-
 const FloatingWrapper = styled.View`
   position: absolute;
   bottom: 25px;

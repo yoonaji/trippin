@@ -51,7 +51,7 @@ const PostDetailScreen = () => {
 
   useEffect(() => {
     fetchPostDetail();
-  }, []);
+  }, [postId]);
 
   const fetchPostDetail = async () => {
     try {

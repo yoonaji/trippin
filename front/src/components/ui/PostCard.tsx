@@ -34,9 +34,10 @@ type PostData = {
 
 type PostCardProps = {
   data: PhotoData | PostData;
+  onPress?: () => void;
 };
 
-const PostCard = ({ data }: PostCardProps) => {
+const PostCard = ({ data, onPress }: PostCardProps) => {
   if (!data) return null;
 
   const isPost = data.type === 'post';
@@ -64,7 +65,7 @@ const PostCard = ({ data }: PostCardProps) => {
   };
 
   return (
-    <Card style={{ width: '100%' }}>
+    <Card onPress={onPress} style={{ width: '100%' }}>
       <StatusView>
         <AuthorWrapper>
           <ProfileImage
@@ -140,7 +141,7 @@ const PostCard = ({ data }: PostCardProps) => {
 
 export default PostCard;
 
-const Card = styled.View`
+const Card = styled.Pressable`
   width: 100%;
   padding: 12px;
   border-radius: 10px;

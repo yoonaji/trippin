@@ -65,7 +65,7 @@ const ButtonWrapper = styled.View`
   gap: 5px;
 `;
 
-const UserName = styled.Text`
+const UserName = styled(CustomText)`
   font-weight: 500;
   font-size: 14px;
   color: ${colors.gray7};

@@ -67,7 +67,7 @@ const FriendListScreen = () => {
       <SearchBar
         value={search}
         onChangeText={setSearch}
-        placeholder="이메일로 친구 검색"
+        placeholder="친구 검색"
         onClear={() => setSearch('')}
         style={{ marginBottom: 28 }}
       />
