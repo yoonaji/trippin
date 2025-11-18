@@ -13,7 +13,10 @@ public record PhotoSummaryDto(
         int commentCount,
         LocalDateTime createdAt,
         String authorName,
-        String authorProfileImage
+        String authorProfileImage,
+        String placeName,
+        Double latitude,
+        Double longitude
 ) {
     public static PhotoSummaryDto from(Photo photo) {
 
@@ -28,6 +31,14 @@ public record PhotoSummaryDto(
             authorProfileImage = photo.getPost().getUser().getProfileImage();
         }
 
+        String placeName = null;
+        Double lat = photo.getLatitude();
+        Double lon = photo.getLongitude();
+
+        if (photo.getMarker() != null && photo.getMarker().getGlobalPlace() != null) {
+            placeName = photo.getMarker().getGlobalPlace().getPlaceName();
+        }
+
         return new PhotoSummaryDto(
                 photo.getId(),
                 postId,
@@ -37,7 +48,10 @@ public record PhotoSummaryDto(
                 commentCount,
                 photo.getCreatedAt(),
                 authorName,
-                authorProfileImage
+                authorProfileImage,
+                placeName,
+                lat,
+                lon
         );
     }
 }

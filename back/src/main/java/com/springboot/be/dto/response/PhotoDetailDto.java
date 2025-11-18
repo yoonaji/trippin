@@ -17,6 +17,7 @@ public record PhotoDetailDto(
         LocalDateTime takenAt,
         Double latitude,
         Double longitude,
+        String placeName,
         List<CommentDto> comments
 ) {
     public static PhotoDetailDto from(Photo photo, List<CommentDto> comments) {
@@ -28,6 +29,11 @@ public record PhotoDetailDto(
         if (photo.getPost() != null && photo.getPost().getUser() != null) {
             authorName = photo.getPost().getUser().getUsername();
             authorProfileImage = photo.getPost().getUser().getProfileImage();
+        }
+
+        String placeName = null;
+        if (photo.getMarker() != null && photo.getMarker().getGlobalPlace() != null) {
+            placeName = photo.getMarker().getGlobalPlace().getPlaceName();
         }
 
         return new PhotoDetailDto(
@@ -42,6 +48,7 @@ public record PhotoDetailDto(
                 photo.getTakenAt(),
                 photo.getLatitude(),
                 photo.getLongitude(),
+                placeName,
                 comments
         );
     }
