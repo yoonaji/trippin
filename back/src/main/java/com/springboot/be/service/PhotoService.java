@@ -18,6 +18,8 @@ import com.springboot.be.repository.PhotoLikeRepository;
 import com.springboot.be.repository.PhotoRepository;
 import com.springboot.be.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +53,7 @@ public class PhotoService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final GeoCodingService geoCodingService;
+    private static final Logger log = LoggerFactory.getLogger(PhotoLike.class);
 //    private final S3Client s3Client;
 //    private final S3Presigner s3Presigner;
 
@@ -162,7 +165,7 @@ public class PhotoService {
                         "publicUrl", "https://" + cdn + "/" + key
                 ));
             } catch (Exception e) {
-                // 로깅 추가 권장 (e.g., log.error("Failed to sign URL", e))
+                log.error("GCS Presigned URL 생성 실패. 파일: " + file.getFilename(), e);
             }
         }
         return out;
