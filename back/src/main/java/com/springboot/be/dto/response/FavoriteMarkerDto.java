@@ -14,6 +14,7 @@ public record FavoriteMarkerDto(
 ) {
     public record PhotoPreview(
             Long photoId,
+            Long postId,
             String title,
             String content,
             String imageUrl,
@@ -25,6 +26,7 @@ public record FavoriteMarkerDto(
             var post = photo.getPost();
             return new PhotoPreview(
                     photo.getId(),
+                    post != null ? post.getId() : null,
                     post != null ? post.getTitle() : null,
                     photo.getContent(),
                     photo.getImageUrl(),

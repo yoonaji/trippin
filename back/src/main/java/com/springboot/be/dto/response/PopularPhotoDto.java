@@ -13,6 +13,7 @@ import lombok.Setter;
 public class PopularPhotoDto {
 
     private Long photoId;
+    private Long postId;
     private String title;
     private String content;
     private String imageUrl;
@@ -42,6 +43,7 @@ public class PopularPhotoDto {
 
         return new PopularPhotoDto(
                 photo.getId(),
+                post != null ? post.getId() : null,
                 post != null ? post.getTitle() : null,
                 photo.getContent(),
                 photo.getImageUrl(),

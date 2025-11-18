@@ -35,9 +35,9 @@ const BottomList = forwardRef<any, BottomListProps>(({ type }, ref) => {
           </>
         )}
       </TopSection>
-      <ScrollView ref={ref} style={{ marginBottom: 300 }}>
+      <ScrollView ref={ref} contentContainerStyle={{ paddingBottom: 300 }}>
         {photosDummyData.map(photo => (
-          <PostCard key={photo.photoId} photo={photo} />
+          <PostCard key={photo.photoId} data={{ type: 'photo', ...photo }} />
         ))}
       </ScrollView>
     </>

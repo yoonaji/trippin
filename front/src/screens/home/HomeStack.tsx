@@ -13,11 +13,13 @@ import PostCreateScreen from './PostCreateScreen';
 import { useNavigation } from '@react-navigation/native';
 import CustomText from '../../components/ui/CustomText';
 import PostConfirmScreen from './PostConfirmScreen';
+import PostDetailScreen from '../shared/PostDetailScreen';
 
 export type HomeStackParam = {
   MainMapScreen: undefined;
   PostCreateScreen: undefined;
   PostConfirmScreen: { postData: any };
+  PostDetailScreen: { postId: number };
 };
 
 const Stack = createNativeStackNavigator<HomeStackParam>();
@@ -86,6 +88,22 @@ const HomeStack = () => {
               style={{ fontSize: 18, color: colors.gray7 }}
             >
               미리보기
+            </CustomText>
+          ),
+          headerTitleAlign: 'center',
+          headerShadowVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="PostDetailScreen"
+        component={PostDetailScreen}
+        options={{
+          headerTitle: () => (
+            <CustomText
+              weight="600"
+              style={{ fontSize: 18, color: colors.gray7 }}
+            >
+              게시글
             </CustomText>
           ),
           headerTitleAlign: 'center',

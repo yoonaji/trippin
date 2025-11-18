@@ -26,13 +26,8 @@ import DateTimePicker, {
   DateTimePickerAndroid,
 } from '@react-native-community/datetimepicker';
 import { useLoading } from '../../components/ui/LoadingContext';
+import { showError } from '../../utils/toast';
 dayjs.locale('ko');
-
-const showError = (title: string, message?: string) =>
-  Toast.show({ type: 'error', text1: title, text2: message });
-
-const showSuccess = (title: string, message?: string) =>
-  Toast.show({ type: 'success', text1: title, text2: message });
 
 const sleep = (ms: number) =>
   new Promise<void>(res => setTimeout(() => res(), ms));

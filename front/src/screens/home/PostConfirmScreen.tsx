@@ -67,8 +67,6 @@ const PostConfirmScreen = () => {
 
   const activePhoto = postData.photos[activeIndex];
 
-  console.log('postData.photos', postData.photos);
-
   return (
     <Container style={{ flex: 1, paddingBottom: insets.bottom + 10 }}>
       <Wrapper>

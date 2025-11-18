@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record PhotoSummaryDto(
         Long photoId,
+        Long postId,
         String content,
         String imageUrl,
         int likeCount,
@@ -20,13 +21,16 @@ public record PhotoSummaryDto(
 
         String authorName = null;
         String authorProfileImage = null;
+        Long postId = null;
         if (photo.getPost() != null && photo.getPost().getUser() != null) {
+            postId = photo.getPost().getId();
             authorName = photo.getPost().getUser().getUsername();
             authorProfileImage = photo.getPost().getUser().getProfileImage();
         }
 
         return new PhotoSummaryDto(
                 photo.getId(),
+                postId,
                 photo.getContent(),
                 photo.getImageUrl(),
                 photo.getLikeCount(),

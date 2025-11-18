@@ -2,12 +2,15 @@ import CustomText from './CustomText';
 import { colors } from '../../styles/colors';
 import styled from 'styled-components/native';
 import author from '../../assets/images/icon/author.png';
+import noImage from '../../assets/images/icon/no_image.png';
 import place from '../../assets/images/icon/place.png';
 import filledHeart from '../../assets/images/icon/filledheart.png';
 import comment from '../../assets/images/icon/chat.png';
 import { View } from 'react-native';
+import { useState } from 'react';
 
 type PhotoData = {
+  type: 'photo';
   photoId: number;
   authorName: string;
   authorProfileImage: string | null;
@@ -19,11 +22,27 @@ type PhotoData = {
   commentCount: number;
 };
 
-type PostCardProps = {
-  photo: PhotoData;
+type PostData = {
+  type: 'post';
+  postId: number;
+  title: string;
+  thumbnailUrl: string | null;
+  period: string | null;
+  authorName: string;
+  authorProfileImage: string | null;
 };
 
-const PostCard = ({ photo }: PostCardProps) => {
+type PostCardProps = {
+  data: PhotoData | PostData;
+  onPress?: () => void;
+};
+
+const PostCard = ({ data, onPress }: PostCardProps) => {
+  if (!data) return null;
+
+  const isPost = data.type === 'post';
+  const [loadFailed, setLoadFailed] = useState(false);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -46,52 +65,83 @@ const PostCard = ({ photo }: PostCardProps) => {
   };
 
   return (
-    <>
-      <Card key={photo.photoId}>
-        <StatusView>
-          <AuthorWrapper>
-            <ProfileImage
-              source={
-                photo.authorProfileImage
-                  ? { uri: photo.authorProfileImage }
-                  : author
-              }
-            />
-            <Author>{photo.authorName}</Author>
-          </AuthorWrapper>
-          <DateWrapper>
-            <DateText>{formatDate(photo.createdAt)}</DateText>
-            <TimeText>{formatTime(photo.createdAt)}</TimeText>
-          </DateWrapper>
-        </StatusView>
+    <Card onPress={onPress} style={{ width: '100%' }}>
+      <StatusView>
+        <AuthorWrapper>
+          <ProfileImage
+            source={
+              data.authorProfileImage
+                ? { uri: data.authorProfileImage }
+                : author
+            }
+          />
+          <Author>{data.authorName}</Author>
+        </AuthorWrapper>
 
-        <Content>
-          <Photo source={{ uri: photo.imageUrl }} resizeMode="cover" />
-          <TextContent>
-            <View>
+        {isPost === false && data.createdAt && (
+          <DateWrapper>
+            <DateText>{formatDate(data.createdAt)}</DateText>
+            <TimeText>{formatTime(data.createdAt)}</TimeText>
+          </DateWrapper>
+        )}
+      </StatusView>
+
+      <Content>
+        <Photo
+          failed={loadFailed}
+          source={
+            loadFailed
+              ? noImage
+              : isPost
+              ? data.thumbnailUrl
+                ? { uri: data.thumbnailUrl }
+                : noImage
+              : data.imageUrl
+              ? { uri: data.imageUrl }
+              : noImage
+          }
+          onError={() => setLoadFailed(true)}
+        />
+
+        <TextContent>
+          <View>
+            {isPost ? (
+              <CustomText style={{ fontSize: 15, fontWeight: '700' }}>
+                {data.title}
+              </CustomText>
+            ) : (
               <PlaceWrapper>
                 <IconImage source={place} />
-                <Place>{photo.location}</Place>
+                <Place>{data.location}</Place>
               </PlaceWrapper>
-              <Line />
-              <Description>{photo.content}</Description>
-            </View>
+            )}
+
+            <Line />
+
+            {isPost ? (
+              <PeriodText>{data.period}</PeriodText>
+            ) : (
+              <Description>{data.content}</Description>
+            )}
+          </View>
+
+          {!isPost && (
             <Row>
               <Icon source={filledHeart} />
-              <Count>{photo.likeCount}</Count>
+              <Count>{data.likeCount}</Count>
               <Icon source={comment} />
-              <Count>{photo.commentCount}</Count>
+              <Count>{data.commentCount}</Count>
             </Row>
-          </TextContent>
-        </Content>
-      </Card>
-    </>
+          )}
+        </TextContent>
+      </Content>
+    </Card>
   );
 };
 
 export default PostCard;
 
-const Card = styled.View`
+const Card = styled.Pressable`
   width: 100%;
   padding: 12px;
   border-radius: 10px;
@@ -148,11 +198,11 @@ const Content = styled.View`
   gap: 15px;
 `;
 
-const Photo = styled.Image`
-  width: 100px;
-  height: 100px;
-  background-color: ${colors.gray2};
+const Photo = styled.Image<{ failed: boolean }>`
+  width: ${({ failed }) => (failed ? '80px' : '100px')};
+  height: ${({ failed }) => (failed ? '80px' : '100px')};
   border-radius: 8px;
+  background-color: ${colors.gray1};
 `;
 
 const TextContent = styled.View`
@@ -184,6 +234,12 @@ const Line = styled.View`
   background: ${colors.gray5};
   margin-top: 8px;
   margin-bottom: 6px;
+`;
+
+const PeriodText = styled(CustomText)`
+  color: ${colors.gray5};
+  font-size: 12px;
+  font-weight: 400;
 `;
 
 const Description = styled(CustomText).attrs({
