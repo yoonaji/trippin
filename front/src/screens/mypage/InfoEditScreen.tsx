@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
-import { Container } from '../../styles/GlobalStyles';
+// import { Container } from '../../styles/GlobalStyles';
 import CustomText from '../../components/ui/CustomText';
 import IconButton from '../../components/buttons/IconButton';
 import profile from '../../assets/images/icon/profile.png';
@@ -56,7 +56,7 @@ const MyPageScreen = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await api.delete('/api/auth/logout');
+      const res = await api.post('/api/auth/logout');
       showSuccess('로그아웃 완료', res.data?.message);
     } catch (e: any) {
       showError('로그아웃 실패', e.response?.data?.message);
@@ -67,12 +67,12 @@ const MyPageScreen = () => {
     <Container>
       <Scroll>
         <HeaderRow>
+          <FloatingContainer>
+            <FloatingButton>
+              <IconButton icon={profile} size={25} />
+            </FloatingButton>
+          </FloatingContainer>
           <SectionTitle>
-            <FloatingContainer>
-              <FloatingButton>
-                <IconButton icon={profile} size={25} />
-              </FloatingButton>
-            </FloatingContainer>
             프로필 설정
           </SectionTitle>
         </HeaderRow>
@@ -155,12 +155,12 @@ const MyPageScreen = () => {
         </ModalBox>
 
         <HeaderRow>
+          <FloatingContainer>
+            <FloatingButton>
+              <IconButton icon={ring} size={25} />
+            </FloatingButton>
+          </FloatingContainer>
           <SectionTitle>
-            <FloatingContainer>
-              <FloatingButton>
-                <IconButton icon={ring} size={25} />
-              </FloatingButton>
-            </FloatingContainer>
             알림 설정
           </SectionTitle>
         </HeaderRow>
@@ -179,12 +179,12 @@ const MyPageScreen = () => {
         </BlockCard>
 
         <HeaderRow>
+          <FloatingContainer>
+            <FloatingButton>
+              <IconButton icon={company} size={25} />
+            </FloatingButton>
+          </FloatingContainer>
           <SectionTitle>
-            <FloatingContainer>
-              <FloatingButton>
-                <IconButton icon={company} size={25} />
-              </FloatingButton>
-            </FloatingContainer>
             제휴 문의
           </SectionTitle>
         </HeaderRow>
@@ -205,18 +205,22 @@ const Scroll = styled.ScrollView``;
 
 const HeaderRow = styled.View`
   margin: 20px 0 12px;
+  flex-direction: row;   
+  align-items: center;   
+  padding-left: 20px;    
 `;
 
 const SectionTitle = styled(CustomText)`
   font-size: 16px;
   font-weight: 700;
   color: ${colors.blue};
+  left:25px;  
+  top:0px
 `;
 
 const FloatingContainer = styled.View`
   position: absolute;
-  right: 28px;
-  bottom: 8px;
+  left: 0px;
 `;
 
 const FloatingButton = styled.View`
@@ -305,4 +309,13 @@ const ButtonText = styled(CustomText)`
   font-size: 15px;
   font-weight: 700;
   color: white;
+`;
+
+
+const Container = styled.View`
+  flex: 1;
+  background-color: ${colors.background};
+  justify-content: flex-start;
+  width: 100%;
+  padding: 0 24px;
 `;
