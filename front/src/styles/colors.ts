@@ -1,5 +1,5 @@
 export const colors = {
-  backgroud: '#ffffff',
+  backgroud: '#ffff',
   green: '#BADBA0',
   red: '#E95E3F',
   pink: '#F9C0B9',
@@ -12,4 +12,7 @@ export const colors = {
   gray6: '#5A5A5A',
   gray7: '#353535',
   gray8: '#222222',
+  white: '#ffffff',
+  blue: '#B3D7F5',
+  sky: '#F3F8FD'
 };

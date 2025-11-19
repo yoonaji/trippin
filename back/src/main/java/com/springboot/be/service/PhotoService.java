@@ -9,6 +9,7 @@ import com.springboot.be.dto.request.ImageUploadRequest;
 import com.springboot.be.dto.response.CommentDto;
 import com.springboot.be.dto.response.PhotoDetailDto;
 import com.springboot.be.dto.response.PhotoUploadResponse;
+import com.springboot.be.dto.response.PopularPhotoDto;
 import com.springboot.be.entity.Photo;
 import com.springboot.be.entity.PhotoLike;
 import com.springboot.be.entity.User;
@@ -154,18 +155,20 @@ public class PhotoService {
                         SignUrlOption.withContentType() // Content-Type을 서명에 포함
                 );
 
+                String normalizedCdn = cdn.replaceFirst("^https://https://", "https://");
+                if (!normalizedCdn.startsWith("http")) {
+                    normalizedCdn = "https://" + normalizedCdn;
+                }
+                String publicUrl = normalizedCdn + "/" + key;
+
                 out.add(Map.of(
                         "objectKey", key,
                         "uploadUrl", uploadUrl.toString(),
-                        // GCS V4 Signed URL은 S3와 달리 별도 헤더 맵을 반환하지 않습니다.
-                        // Content-Type 등은 서명 자체에 포함되며, 클라이언트는 PUT 요청 시
-                        // 반드시 'Content-Type' 헤더를 전송해야 합니다. (S3도 동일)
-                        // 기존 API 출력 구조를 맞추기 위해 빈 맵을 반환합니다.
                         "headers", Collections.emptyMap(),
-                        "publicUrl", "https://" + cdn + "/" + key
+                        "publicUrl", publicUrl
                 ));
             } catch (Exception e) {
-                log.error("GCS Presigned URL 생성 실패. 파일: " + file.getFilename(), e);
+                e.printStackTrace();
             }
         }
         return out;
@@ -203,7 +206,8 @@ public class PhotoService {
 
                 String address = (lat != null && lng != null) ? geoCodingService.reverseGeocoding(lat, lng) : "위치 정보 없음";
 
-                String publicUrl = "https://" + cdn + "/" + key;
+                String normalizedCdn = cdn.startsWith("http") ? cdn : "https://" + cdn;
+                String publicUrl = normalizedCdn + "/" + key;
                 responses.add(new PhotoUploadResponse(publicUrl, address, takenAt));
             } catch (Exception e) {
                 responses.add(new PhotoUploadResponse(
@@ -224,5 +228,13 @@ public class PhotoService {
 
         name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
         return "images/" + UUID.randomUUID().toString() + "-" + name + ext;
+    }
+
+    @Transactional(readOnly = true)
+    public List<PopularPhotoDto> getPopularPhotos() {
+        return photoRepository.findTopPopularPhotos().stream()
+                .limit(5)
+                .map(PopularPhotoDto::from)
+                .toList();
     }
 }

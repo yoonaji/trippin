@@ -12,6 +12,7 @@
 
 # Environment
 .env
+gcp-key.json
 
 # IDE
 .idea/

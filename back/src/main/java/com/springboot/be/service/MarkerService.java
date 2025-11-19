@@ -1,5 +1,6 @@
 package com.springboot.be.service;
 
+import com.springboot.be.dto.response.FavoriteMarkerDto;
 import com.springboot.be.dto.response.MarkerDetailDto;
 import com.springboot.be.dto.response.MarkerSummaryDto;
 import com.springboot.be.entity.Marker;
@@ -55,12 +56,19 @@ public class MarkerService {
         return convertToDto(markerRepository.findTop10ByOrderByPhotoCountDesc());
     }
 
-    public List<MarkerSummaryDto> getFavoriteMarkers(Long userId) {
+    public List<FavoriteMarkerDto> getFavoriteMarkers(Long userId) {
         if (userId == null) {
             throw new UnauthorizedException("사용자를 찾을 수 없습니다.");
         }
         List<Marker> markers = photoLikeRepository.findDistinctMarkersByUserId(userId);
-        return convertToDto(markers);
+
+        return markers.stream()
+                .map(marker -> {
+                    List<Photo> photos = photoRepository
+                            .findTop3ByMarker_IdOrderByCreatedAtDesc(marker.getId());
+                    return FavoriteMarkerDto.from(marker, photos);
+                })
+                .toList();
     }
 
     public MarkerDetailDto getMarkerDetail(Long markerId) {

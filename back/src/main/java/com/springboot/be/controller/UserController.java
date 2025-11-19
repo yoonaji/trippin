@@ -3,11 +3,9 @@ package com.springboot.be.controller;
 import com.springboot.be.dto.common.ApiResponse;
 import com.springboot.be.dto.request.ProfileImageUpdateRequest;
 import com.springboot.be.dto.request.UsernameUpdateRequest;
-import com.springboot.be.dto.response.CommentDto;
-import com.springboot.be.dto.response.PhotoSummaryDto;
-import com.springboot.be.dto.response.PostSummaryDto;
-import com.springboot.be.dto.response.UserDto;
+import com.springboot.be.dto.response.*;
 import com.springboot.be.security.services.UserDetailsImpl;
+import com.springboot.be.service.TravelPathService;
 import com.springboot.be.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final TravelPathService travelPathService;
 
     @GetMapping("/me")
     public ApiResponse<UserDto> getMyInfo(@AuthenticationPrincipal UserDetailsImpl me) {
@@ -62,5 +61,10 @@ public class UserController {
     @GetMapping("/me/favorites")
     public ApiResponse<List<PhotoSummaryDto>> getMyFavorites(@AuthenticationPrincipal UserDetailsImpl me) {
         return ApiResponse.success("내가 좋아요한 사진 조회 성공", userService.getFavoritePhotos(me.getId()));
+    }
+
+    @GetMapping("/me/routes")
+    public ApiResponse<List<MyTravelPathDto>> getMyTravelPaths(@AuthenticationPrincipal UserDetailsImpl me) {
+        return ApiResponse.success("내 여행 경로 조회 성공", travelPathService.getMyTravelPaths(me.getId()));
     }
 }

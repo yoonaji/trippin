@@ -1,6 +1,7 @@
 package com.springboot.be.controller;
 
 import com.springboot.be.dto.common.ApiResponse;
+import com.springboot.be.dto.response.FavoriteMarkerDto;
 import com.springboot.be.dto.response.MarkerDetailDto;
 import com.springboot.be.dto.response.MarkerSummaryDto;
 import com.springboot.be.security.services.UserDetailsImpl;
@@ -46,7 +47,7 @@ public class MarkerController {
     }
 
     @GetMapping("/markers/favorites")
-    public ApiResponse<List<MarkerSummaryDto>> getFavoriteMarkers(@AuthenticationPrincipal UserDetailsImpl me) {
+    public ApiResponse<List<FavoriteMarkerDto>> getFavoriteMarkers(@AuthenticationPrincipal UserDetailsImpl me) {
         return ApiResponse.success("찜한 마커 조회 성공", markerService.getFavoriteMarkers(me.getId()));
     }
 

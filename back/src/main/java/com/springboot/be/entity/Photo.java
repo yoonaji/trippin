@@ -28,7 +28,6 @@ public class Photo {
     @Column(nullable = false)
     private String imageUrl;
 
-    @Lob
     private String content;
 
     private Double latitude;

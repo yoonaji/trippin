@@ -2,6 +2,7 @@ package com.springboot.be.controller;
 
 import com.springboot.be.dto.common.ApiResponse;
 import com.springboot.be.dto.response.MarkerSummaryDto;
+import com.springboot.be.dto.response.TravelPathWithMarkersDto;
 import com.springboot.be.service.TravelPathService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +16,12 @@ public class TravelPathController {
     private final TravelPathService travelPathService;
 
     @GetMapping("/recommended")
-    public ApiResponse<List<List<MarkerSummaryDto>>> getRecommendedRoutes(
+    public ApiResponse<List<TravelPathWithMarkersDto>> getRecommendedRoutes(
             @RequestParam double lat,
             @RequestParam double lng,
             @RequestParam(defaultValue = "5") double radius
     ) {
-        List<List<MarkerSummaryDto>> routes = travelPathService.getRecommendedRoutes(lat, lng, radius);
+        List<TravelPathWithMarkersDto> routes = travelPathService.getRecommendedRoutes(lat, lng, radius);
         return ApiResponse.success("추천 여행 경로 조회 성공", routes);
     }
 

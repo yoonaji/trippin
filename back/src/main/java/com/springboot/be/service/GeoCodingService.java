@@ -24,6 +24,7 @@ public class GeoCodingService {
             String url = UriComponentsBuilder
                     .fromUriString("https://maps.googleapis.com/maps/api/geocode/json")
                     .queryParam("latlng", lat + "," + lon)
+                    .queryParam("language", "ko")
                     .queryParam("key", googleApiKey)
                     .build()
                     .toUriString();
@@ -57,6 +58,7 @@ public class GeoCodingService {
             String url = UriComponentsBuilder
                     .fromUriString("https://maps.googleapis.com/maps/api/geocode/json")
                     .queryParam("address", address)
+                    .queryParam("language", "ko")
                     .queryParam("key", googleApiKey)
                     .build().toUriString();
 
