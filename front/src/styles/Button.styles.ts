@@ -42,7 +42,8 @@ export const ButtonText = styled(CustomText).attrs({
   color: ${colors.gray8};
 `;
 
-export const IconImage = styled.Image<{ size?: number }>`
+export const IconImage = styled.Image<{ size?: number; color?: string }>`
   width: ${({ size }) => size ?? 20}px;
   height: ${({ size }) => size ?? 20}px;
+  tint-color: ${({ color }) => color || 'black'};
 `;

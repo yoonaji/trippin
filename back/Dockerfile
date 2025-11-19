@@ -1,4 +1,12 @@
-FROM openjdk:17-jdk-slim
+# 1단계: Gradle 빌드
+FROM gradle:8.7-jdk17-jammy AS builder
 WORKDIR /app
-COPY build/libs/*.jar app.jar
+COPY . .
+RUN gradle clean build -x test
+
+
+# 2단계: 실행용 이미지
+FROM eclipse-temurin:17-jdk-jammy
+WORKDIR /app
+COPY --from=builder /app/build/libs/BE-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
