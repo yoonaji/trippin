@@ -52,7 +52,9 @@ const PostCard = ({ data, onPress, onToggleLike }: PostCardProps) => {
   const isPhoto = isPhotoData(data);
 
   const [loadFailed, setLoadFailed] = useState(false);
-  const [isLiked, setIsLiked] = useState(isPhoto ? data.liked : false);
+  const [isLiked, setIsLiked] = useState(
+    isPhoto ? Boolean(data.liked) : false,
+  );
   const [likeCount, setLikeCount] = useState(isPhoto ? data.likeCount : 0);
   const [processing, setProcessing] = useState(false);
 
@@ -114,23 +116,26 @@ const PostCard = ({ data, onPress, onToggleLike }: PostCardProps) => {
 
     setProcessing(true);
 
+    const prevLiked = isLiked;
+    const prevCount = likeCount;
+
+    const nextLiked = !prevLiked;
+    const nextCount = nextLiked ? prevCount + 1 : prevCount - 1;
+
+    setIsLiked(nextLiked);
+    setLikeCount(nextCount);
+    onToggleLike?.(data.photoId, nextLiked, nextCount);
+
     try {
-      if (!isLiked) {
-        const res = await api.post(`/api/photos/${data.photoId}/like`);
-        const result = res.data.data;
-
-        setIsLiked(result.liked);
-        setLikeCount(result.likeCount);
-
-        onToggleLike?.(data.photoId, true, result.likeCount); // 부모에게 보고
+      if (nextLiked) {
+        await api.post(`/api/photos/${data.photoId}/like`);
       } else {
         await api.delete(`/api/photos/${data.photoId}/like`);
-
-        setIsLiked(false);
-        setLikeCount(likeCount - 1);
-
-        onToggleLike?.(data.photoId, false, likeCount - 1);
       }
+    } catch (e) {
+      setIsLiked(prevLiked);
+      setLikeCount(prevCount);
+      onToggleLike?.(data.photoId, prevLiked, prevCount);
     } finally {
       setProcessing(false);
     }
@@ -138,10 +143,10 @@ const PostCard = ({ data, onPress, onToggleLike }: PostCardProps) => {
 
   useEffect(() => {
     if (isPhoto) {
-      setIsLiked(data.liked);
+      setIsLiked(Boolean(data.liked));
       setLikeCount(data.likeCount);
     }
-  }, [data]);
+  }, [isPhoto, isPhoto ? data.photoId : undefined, isPhoto ? data.liked : undefined, isPhoto ? data.likeCount : undefined]);
 
   return (
     <Card onPress={onPress}>

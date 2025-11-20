@@ -13,6 +13,7 @@ import { MarkerData } from '../../types/MarkerData';
 import { useLoading } from '../../components/ui/LoadingContext';
 import MapView from 'react-native-map-clustering';
 import markerImg from '../../assets/images/icon/marker.png';
+import markerRed from '../../assets/images/icon/marker_red.png';
 import { colors } from '../../styles/colors';
 import { Image } from 'react-native';
 import { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -229,6 +230,7 @@ const MainMapScreen = () => {
 
   useEffect(() => {
     fetchDataByTab();
+    setSelectedMarkerId(null);
   }, [activeTab]);
 
   useEffect(() => {
@@ -287,7 +289,7 @@ const MainMapScreen = () => {
             onPress={() => handleMarkerPress(m)}
           >
             <Image
-              source={markerImg}
+              source={selectedMarkerId === m.id ? markerRed : markerImg}
               style={{
                 width: selectedMarkerId === m.id ? 55 : 40,
                 height: selectedMarkerId === m.id ? 78 : 57,
