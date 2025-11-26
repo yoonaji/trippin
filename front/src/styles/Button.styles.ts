@@ -8,11 +8,11 @@ interface WrapperProps {
 }
 
 export const PrimaryWrapper = styled(Pressable)<WrapperProps>`
-  background-color: ${({ backgroundColor }) => backgroundColor};
+  background-color: ${({ backgroundColor }) => backgroundColor || colors.blue};
   width: 100%;
-  height: 62px;
+  height: 55px;
   padding: 19px 0;
-  border-radius: 20px;
+  border-radius: 15px;
   justify-content: center;
   align-items: center;
 `;
@@ -35,14 +35,14 @@ export const SelectText = styled(CustomText).attrs({
   color: ${({ isSelected }) => (isSelected ? colors.gray8 : colors.gray5)};
 `;
 
-export const ButtonText = styled(CustomText).attrs({
-  weight: '500',
-})`
-  font-size: 16px;
-  color: ${colors.gray8};
+export const ButtonText = styled(CustomText)<{ weight?: string }>`
+  font-size: 15px;
+  color: ${colors.gray6};
+  font-weight: ${({ weight }) => weight || '500'};
 `;
 
 export const IconImage = styled.Image<{ size?: number }>`
   width: ${({ size }) => size ?? 20}px;
   height: ${({ size }) => size ?? 20}px;
+  resize-mode: contain;
 `;

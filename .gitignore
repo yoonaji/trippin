@@ -1,3 +1,64 @@
-.env
+# Java / Gradle
+/build/
+/out/
+.gradle/
 
-.idea
+# Terraform / Helm
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.tar.gz
+*.hcl
+
+# Environment
+.env
+gcp-key.json
+
+# IDE
+.idea/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs & temp
+*.log
+tmp/
+*.swp
+
+# Gradle build output
+build/
+.gradle/
+out/
+!gradle/wrapper/gradle-wrapper.jar  # 이건 유지해야 함
+
+# Terraform local cache & state
+.terraform.lock.hcl
+crash.log
+terraform.tfvars
+*.tfplan
+
+# Java
+*.class
+
+# Docker
+*.pid
+
+# IntelliJ / VSCode (추가 보호)
+.vscode/
+*.ipr
+*.iws
+
+# OS & Temp
+*.tmp
+*.bak
+*.old
+
+# Dependency Archives (특히 대용량)
+*.zip
+*.tar
+*.tar.gz
+*.jar
+*.war
+*.ear

@@ -1,6 +1,8 @@
 import React from 'react';
 import * as S from '../../styles/Button.styles';
 import { Pressable } from 'react-native';
+import styled from 'styled-components/native';
+import { colors } from '../../styles/colors';
 
 type IconParam = {
   icon: any;

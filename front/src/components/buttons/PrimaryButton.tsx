@@ -5,12 +5,13 @@ interface Props {
   title: string;
   onPress?: () => void;
   color?: string;
+  fontWeight?: string;
 }
 
-const PrimaryButton = ({ title, onPress, color }: Props) => {
+const PrimaryButton = ({ title, onPress, color, fontWeight }: Props) => {
   return (
     <S.PrimaryWrapper onPress={onPress} backgroundColor={color}>
-      <S.ButtonText>{title}</S.ButtonText>
+      <S.ButtonText weight={fontWeight || '500'}>{title}</S.ButtonText>
     </S.PrimaryWrapper>
   );
 };

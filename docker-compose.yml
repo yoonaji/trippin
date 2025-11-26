@@ -1,29 +1,54 @@
 services:
   postgres:
-    image: "postgres:latest"
+    image: "postgres:16"
     environment:
       - "POSTGRES_DB=${POSTGRES_DB}"
       - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
       - "POSTGRES_USER=${POSTGRES_USER}"
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   redis:
     image: "redis:latest"
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
   springboot:
     build:
       context: ./back
+      dockerfile: Dockerfile
     container_name: springboot
     depends_on:
       - postgres
       - redis
     ports:
-      - "8080:8080"
+      - "${SPRINGBOOT_PORT}:${SPRINGBOOT_PORT}"
+    volumes:
+      - "C:/trippin/gcp-key.json:/app/gcp-key.json"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-key.json
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
+      NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      APP_S3_REGION: ${APP_S3_REGION}
+      APP_S3_BUCKET: ${APP_S3_BUCKET}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCS_BUCKET: ${GCS_BUCKET}
+      GCS_DOMAIN: ${GCS_DOMAIN}
+      APP_CDN_DOMAIN: ${APP_CDN_DOMAIN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
     env_file:
       - .env
+
+#volume
+volumes:
+  postgres_data:

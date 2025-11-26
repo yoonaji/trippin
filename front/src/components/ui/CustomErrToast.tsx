@@ -1,24 +1,34 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import { colors } from '../../styles/colors';
 import CustomText from './CustomText';
+import toast_err from '../../assets/images/icon/toast_err.png';
 
-const CustomErrToast = ({ text1, text2 }: any) => (
+const CustomSuccessToast = ({ text1, text2 }: any) => (
   <View
     style={{
       width: '90%',
-      backgroundColor: colors.red,
+      backgroundColor: '#FAD9D1',
       padding: 16,
       borderRadius: 10,
       marginHorizontal: 20,
       marginBottom: 90,
     }}
   >
-    <CustomText style={{ color: 'white', fontSize: 16 }}>{text1}</CustomText>
-    {text2 && (
-      <CustomText style={{ color: 'white', fontSize: 13 }}>{text2}</CustomText>
-    )}
+    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+      <Image source={toast_err} style={{ width: 32, height: 32 }} />
+      <View style={{ flexDirection: 'column' }}>
+        <CustomText style={{ color: colors.gray8, fontSize: 16 }} weight="600">
+          {text1}
+        </CustomText>
+        {text2 && (
+          <CustomText style={{ color: colors.gray8, fontSize: 13 }}>
+            {text2}
+          </CustomText>
+        )}
+      </View>
+    </View>
   </View>
 );
 
-export default CustomErrToast;
+export default CustomSuccessToast;

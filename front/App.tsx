@@ -7,6 +7,7 @@ import { StatusBar } from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomErrToast from './src/components/ui/CustomErrToast';
 import CustomSuccessToast from './src/components/ui/CustomSuccessToast';
+import { LoadingProvider } from './src/components/ui/LoadingContext';
 
 const App: React.FC = () => {
   return (
@@ -18,12 +19,15 @@ const App: React.FC = () => {
           hidden={false}
         />
         <NavigationContainer>
-          <StackNavigator />
+          <LoadingProvider>
+            <StackNavigator />
+          </LoadingProvider>
         </NavigationContainer>
         <Toast
+          position="bottom"
           config={{
-            myCustomToast: props => <CustomErrToast {...props} />,
-            mySuccessToast: props => <CustomSuccessToast {...props} />,
+            error: props => <CustomErrToast {...props} />,
+            success: props => <CustomSuccessToast {...props} />,
           }}
         />
       </SafeAreaProvider>
